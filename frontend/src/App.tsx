@@ -1,10 +1,26 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
 
 function App() {
   const [count, setCount] = useState(0)
+  const [message, setMessage] = useState('')
+
+  useEffect(() => {
+    // Fetch data when component mounts
+    fetchMessage()
+  }, [count])
+
+  const fetchMessage = async () => {
+    try {
+      const response = await fetch('http://localhost:3000/hello')
+      const data = await response.text()
+      setMessage(data)
+    } catch (error) {
+      console.error('Error fetching message:', error)
+    }
+  }
 
   return (
     <>
@@ -24,6 +40,8 @@ function App() {
         <p>
           Edit <code>src/App.tsx</code> and save to test HMR
         </p>
+        {/* Display the message from the backend */}
+        <p>Message from backend: {message}</p>
       </div>
       <p className="read-the-docs">
         Click on the Vite and React logos to learn more
