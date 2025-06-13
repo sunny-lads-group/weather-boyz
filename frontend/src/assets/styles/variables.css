@@ -8,18 +8,14 @@
   --color-secondary-dark: #86B033;
   --color-secondary-light: #B8D96E;
 
-  --color-tertiary: #404F4D;
-  --color-tertiary-dark: #333F3D;
-  --color-tertiary-light: #4D5D5B;
-
   /* Text Colors */
   --color-text-primary: #2E3837;
   --color-text-secondary: #636363;
   --color-text-light: #FFFFFF;
 
   /* Background Colors */
-  --color-background: #FFFFFF;
-  --color-background-alt: #F5F5F5;
+  --color-background: #404F4D;
+  --color-background-alt: #2E3837;
 
   /* Status Colors */
   --color-success: #4CAF50;
