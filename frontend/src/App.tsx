@@ -7,7 +7,6 @@ import Gallery from './pages/Gallery'
 
 function App() {
   const [connectedAddress, setConnectedAddress] = useState<string>('')
-  const [message, setMessage] = useState('')
 
   const handleWalletConnect = (address: string) => {
     setConnectedAddress(address)
