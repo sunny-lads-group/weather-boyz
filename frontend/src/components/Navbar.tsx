@@ -1,29 +1,36 @@
 import { NavLink } from 'react-router-dom';
-import './Navbar.css';
-// I haven't used React before this. GPT claims that css files are sometimes stored alongside the component files.
-// Vue.js can hold css within the component file, so this seems similar and almost as convenient.
-// Unsure what convention we'd like to do, but I'll try to remember to bring it up in the meeting. - Liam
 
 const Navbar = () => {
+  const navLinkStyles = ({ isActive }: { isActive: boolean }) => 
+    `px-3 py-2 rounded-md text-sm font-medium ${
+      isActive 
+        ? 'bg-gray-900 text-white' 
+        : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+    }`;
+
   return (
-    <nav className="navbar">
-      <div className="navbar-brand">
-        <NavLink to="/">Weather NFT</NavLink>
-      </div>
-      <div className="navbar-links">
-        <NavLink to="/" className={({ isActive }) => 
-          isActive ? 'nav-link active' : 'nav-link'
-        }>
-          Home
-        </NavLink>
-        <NavLink to="/gallery" className={({ isActive }) => 
-          isActive ? 'nav-link active' : 'nav-link'
-        }>
-          Gallery
-        </NavLink>
+    <nav className="bg-orange-500 px-4 py-3">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center">
+          <NavLink to="/" className="text-white font-bold text-xl">
+            WEATHER BOYZ
+          </NavLink>
+        </div>
+        
+        <div className="flex space-x-4">
+          <NavLink to="/" className={navLinkStyles}>
+            Home
+          </NavLink>
+          <NavLink to="/policies" className={navLinkStyles}>
+            MyPolicies
+          </NavLink>
+          <NavLink to="/login" className={navLinkStyles}>
+            Login
+          </NavLink>
+        </div>
       </div>
     </nav>
   );
 };
 
-export default Navbar; 
+export default Navbar;

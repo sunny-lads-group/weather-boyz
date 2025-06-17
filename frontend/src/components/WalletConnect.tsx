@@ -33,7 +33,7 @@ const WalletConnect = ({ onConnect }: WalletConnectProps) => {
   };
 
   return (
-    <div className="wallet-connect">
+    <div >
       {!walletAddress ? (
         <button 
           onClick={connectWallet}

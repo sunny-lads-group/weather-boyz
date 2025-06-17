@@ -1,0 +1,15 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug Rust executable",
+      "type": "lldb",
+      "request": "launch",
+      "program": "${workspaceFolder}/backend/target/debug/backend",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopOnEntry": false,
+      "sourceLanguages": ["rust"]
+    }
+  ]
+}
