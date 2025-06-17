@@ -1,49 +1,40 @@
-import {  useState } from 'react';
-import { ethers } from 'ethers';
+// src/components/WalletConnect.tsx
+import { useWallet } from '../context/WalletContext';
 
-interface WalletConnectProps {
-  onConnect: (address: string) => void;
-}
+const WalletConnect = () => {
+  const { address, isConnecting, connectWallet, disconnectWallet } = useWallet();
 
-const WalletConnect = ({ onConnect }: WalletConnectProps) => {
-  const [walletAddress, setWalletAddress] = useState<string>('');
-  const [isConnecting, setIsConnecting] = useState(false);
-
-  const connectWallet = async () => {
+  const handleConnect = async () => {
     try {
-      setIsConnecting(true);
-      
-      if (!window.ethereum) {
-        alert('Please install MetaMask!');
-        return;
-      }
-
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
-      await provider.send('eth_requestAccounts', []);
-      const signer = provider.getSigner();
-      const address = await signer.getAddress();
-      
-      setWalletAddress(address);
-      onConnect(address);
+      await connectWallet();
     } catch (error) {
       console.error('Error connecting wallet:', error);
-    } finally {
-      setIsConnecting(false);
     }
   };
 
   return (
-    <div >
-      {!walletAddress ? (
-        <button 
-          onClick={connectWallet}
+    <div className="flex items-center">
+      {!address ? (
+        <button
+          onClick={handleConnect}
           disabled={isConnecting}
+          className="bg-white text-orange-500 px-4 py-2 rounded-lg font-medium
+                     hover:bg-orange-100 transition-colors duration-200
+                     disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isConnecting ? 'Connecting...' : 'Connect Wallet'}
         </button>
       ) : (
-        <div>
-          Connected: {walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}
+        <div className="flex items-center space-x-2">
+          <span className="text-white">
+            {address.slice(0, 6)}...{address.slice(-4)}
+          </span>
+          <button
+            onClick={disconnectWallet}
+            className="text-white hover:text-orange-200 text-sm"
+          >
+            Disconnect
+          </button>
         </div>
       )}
     </div>
