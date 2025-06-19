@@ -6,7 +6,7 @@
 
 A web3 application that allows users to buy weather insurance using weatherXM data to verify weather conditions and execute smart contracts.
 
-# Setting up the Database
+## Setting up the Database
 
 1. Download Docker
 
