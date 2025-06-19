@@ -5,7 +5,7 @@ use sqlx::types::time::PrimitiveDateTime;
 pub struct CreateUser {
     pub name: String,
     pub email: String,
-    pub password_hash: String,
+    pub password: String,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -16,4 +16,10 @@ pub struct User {
     pub password_hash: String,
     pub created_at: Option<PrimitiveDateTime>,
     pub updated_at: Option<PrimitiveDateTime>,
+}
+
+#[derive(Deserialize)]
+pub struct SignInData {
+    pub email: String,
+    pub password: String,
 }

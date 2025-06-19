@@ -27,11 +27,11 @@ pub async fn create_user(
         ));
     }
 
-    if new_user.password_hash.trim().is_empty() {
+    if new_user.password.trim().is_empty() {
         return Err((
             StatusCode::BAD_REQUEST,
             Json(serde_json::json!({
-                "error": "Password hash cannot be empty"
+                "error": "Password cannot be empty"
             })),
         ));
     }
@@ -42,7 +42,7 @@ pub async fn create_user(
         "INSERT INTO users (name, email, password_hash) VALUES ($1, $2, $3) RETURNING id, name, email, password_hash, created_at, updated_at",
         new_user.name.trim(),
         new_user.email.trim().to_lowercase(),
-        new_user.password_hash
+        new_user.password
     )
     .fetch_one(&pool)
     .await
