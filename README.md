@@ -41,4 +41,4 @@ A web3 application that allows users to buy weather insurance using weatherXM da
 
 7. Finally run `sqlx migrate run`. This will run the migration files within `backend/migrations`.
 
-> If you want to look at the Database in Docker, search for "postgres" in the searchbar at the top. If your container is active, you should be able to find an option to activate a terminal for it. From there, you can sign into the postgres db with `psql -U USERNAMEHERE`.
+> If you want to look at the Database in Docker, search for "postgres" in the searchbar at the top (If your container is active, you should be able to find an option to activate a terminal for it.) or use the 'Exec' option if you click on your used container. From there, you can sign into the postgres db with `psql -U USERNAMEHERE`.
