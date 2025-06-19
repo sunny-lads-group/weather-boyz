@@ -2,23 +2,7 @@ use crate::db::models::{CreateUser, User};
 use axum::http::StatusCode;
 use axum::{Json, extract::Extension};
 use sqlx::{Error as SqlxError, Pool, Postgres};
-
-#[derive(Debug)]
-pub enum UserError {
-    DatabaseError(SqlxError),
-    DuplicateEmail,
-    ValidationError(String),
-}
-
-impl std::fmt::Display for UserError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            UserError::DatabaseError(e) => write!(f, "Database error: {}", e),
-            UserError::DuplicateEmail => write!(f, "Email already exists"),
-            UserError::ValidationError(msg) => write!(f, "Validation error: {}", msg),
-        }
-    }
-}
+use tracing;
 
 pub async fn create_user(
     Extension(pool): Extension<Pool<Postgres>>,
@@ -98,5 +82,6 @@ pub async fn create_user(
         }
     })?;
 
+    tracing::info!("Successfully created user with email: {}", user.email);
     Ok(Json(user))
 }
