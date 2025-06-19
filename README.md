@@ -40,3 +40,5 @@ A web3 application that allows users to buy weather insurance using weatherXM da
 6. Ensure your terminal is within the `/backend` folder. Assuming you have created the docker container, you can now run `sqlx database create` to create our database. This will create our database.
 
 7. Finally run `sqlx migrate run`. This will run the migration files within `backend/migrations`.
+
+> If you want to look at the Database in Docker, search for "postgres" in the searchbar at the top. If your container is active, you should be able to find an option to activate a terminal for it. From there, you can sign into the postgres db with `psql -U USERNAMEHERE`.
