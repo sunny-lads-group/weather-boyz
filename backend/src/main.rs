@@ -1,15 +1,17 @@
 // src/main.rs
 use axum::{
-    Router,
-    routing::get,
+    Json, Router,
     extract::Query,
-    Json,
+    routing::{get, post},
 };
+use serde::Deserialize;
 use tower_http::cors::CorsLayer;
-use serde::{Deserialize};
 
 mod weather_data;
-use weather_data::weatherxm::{get_weather_data_from_coords, WeatherResponse}; // Add WeatherResponse here
+use weather_data::weatherxm::{WeatherResponse, get_weather_data_from_coords}; // Add WeatherResponse here
+
+mod db;
+use db::user_queries::create_user;
 
 #[derive(Deserialize)]
 struct LocationQuery {
@@ -19,13 +21,20 @@ struct LocationQuery {
 
 #[tokio::main]
 async fn main() {
+    tracing_subscriber::fmt::init();
+
+    // Test the database connection
+    let pool = db::pool::get_pool().await.unwrap();
+
     let cors = CorsLayer::permissive();
     let app = Router::new()
         .route("/getLocalWeather", get(get_local_weather))
-        .layer(cors);
-    
+        .route("/createUser", post(create_user))
+        .layer(cors)
+        .layer(axum::extract::Extension(pool));
+
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
-    println!("Server running on http://0.0.0.0:3000");
+    tracing::info!("Server running on http://0.0.0.0:3000");
     axum::serve(listener, app).await.unwrap();
 }
 
