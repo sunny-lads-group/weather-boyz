@@ -1,15 +1,13 @@
-version: '3.8'
-
 services:
   postgres:
     image: postgres
-    container_name: weather-boyz
+    container_name: weather-boyz-database
     environment:
       POSTGRES_PASSWORD: password
       POSTGRES_USER: postgres
       POSTGRES_DB: weather-boyz-db
     ports:
-      - "5432:5432"
+      - '5432:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
     restart: unless-stopped
