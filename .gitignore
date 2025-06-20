@@ -3,5 +3,4 @@ target/
 node_modules/
 dist/
 .vite/
-frontend/.env
-frontend/.env.*
+.env
