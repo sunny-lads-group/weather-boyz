@@ -26,12 +26,11 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
   const connectWallet = async () => {
     try {
       setIsConnecting(true);
-      
+
       if (!window.ethereum) {
         throw new Error('Please install MetaMask!');
       }
 
-      // Updated ethers v6 syntax
       const provider = new BrowserProvider(window.ethereum);
       await window.ethereum.request({ method: 'eth_requestAccounts' });
       const signer = await provider.getSigner();
@@ -50,13 +49,15 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <WalletContext.Provider value={{
-      address,
-      isConnected: !!address,
-      isConnecting,
-      connectWallet,
-      disconnectWallet
-    }}>
+    <WalletContext.Provider
+      value={{
+        address,
+        isConnected: !!address,
+        isConnecting,
+        connectWallet,
+        disconnectWallet,
+      }}
+    >
       {children}
     </WalletContext.Provider>
   );
