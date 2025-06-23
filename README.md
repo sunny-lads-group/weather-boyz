@@ -12,10 +12,11 @@ A web3 application that allows users to buy weather insurance using weatherXM da
 
 2. Create a docker-compose.yml file in `backend/docker/`. Use the provided `docker-compose.yml.sample` file and change the password as need be.
 
-3. Create a `.env` file in `/backend`. Add the following line to it:
+3. Create a `.env` file in `/backend`. Add the following lines to it:
 
    ```
    DATABASE_URL=postgres://<username>:<password>@<host>:<port>/<database>
+   JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
    ```
 
    Replacing the placeholders with the values in your `docker-compose.yml` file.
@@ -24,6 +25,7 @@ A web3 application that allows users to buy weather insurance using weatherXM da
 
    ```
    DATABASE_URL=postgres://postgres:password@localhost:5432/weather-boyz-db
+   JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
    ```
 
 4. Cd into `backend/docker/` and run `docker-compose up -d`.
