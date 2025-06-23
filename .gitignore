@@ -3,7 +3,4 @@ target/
 node_modules/
 dist/
 .vite/
-frontend/.env
-frontend/.env.*
-backend/.env
-backend/docker/docker-compose.yml
+.env

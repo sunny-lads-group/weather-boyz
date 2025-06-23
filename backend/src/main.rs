@@ -1,25 +1,10 @@
-// src/main.rs
-use axum::{
-    Json, Router,
-    extract::Query,
-    routing::{get, post},
-};
-use serde::Deserialize;
+use axum::{Router, routing::post};
 use tower_http::cors::CorsLayer;
-
-mod weather_data;
-use weather_data::weatherxm::{WeatherResponse, get_weather_data_from_coords}; // Add WeatherResponse here
 
 mod db;
 use db::user_queries::create_user;
 
 mod web;
-
-#[derive(Deserialize)]
-struct LocationQuery {
-    lat: f64,
-    lng: f64,
-}
 
 #[tokio::main]
 async fn main() {
@@ -47,9 +32,7 @@ async fn main() {
 
     // Create your main router
     tracing::info!("Setting up main router...");
-    let main_router = Router::new()
-        .route("/getLocalWeather", get(get_local_weather))
-        .route("/createUser", post(create_user));
+    let main_router = Router::new().route("/createUser", post(create_user));
 
     // Get the web routes router
     tracing::info!("Setting up web routes...");
@@ -85,9 +68,6 @@ async fn main() {
     }
 }
 
-async fn get_local_weather(
-    Query(params): Query<LocationQuery>,
-) -> Json<WeatherResponse> {
-    let weather_data = get_weather_data_from_coords(params.lat, params.lng).await;
-    Json(weather_data)
+async fn hello_world() -> &'static str {
+    "Hello, world!"
 }

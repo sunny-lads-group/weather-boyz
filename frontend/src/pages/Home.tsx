@@ -1,5 +1,4 @@
 import { useWallet } from '../context/WalletContext';
-import WeatherDisplay from '../components/weather/WeatherDisplay';
 
 const Home = () => {
   const { isConnected } = useWallet();
@@ -22,7 +21,6 @@ const Home = () => {
         </div>
       )}
 
-      {isConnected && <WeatherDisplay />}
     </div>
   );
 };
