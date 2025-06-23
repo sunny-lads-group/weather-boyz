@@ -57,10 +57,9 @@ async fn main() {
 
     tracing::info!("Server running on http://0.0.0.0:3000");
     tracing::info!("Available endpoints:");
-    tracing::info!("  POST /signin - User authentication");
-    tracing::info!("  GET  /getLocalWeather - Get weather data");
+    tracing::info!("  POST /signin - User Authentication (get token)");
     tracing::info!("  POST /createUser - Create new user");
-    tracing::info!("  GET  /tokenvalid/ - Protected route (requires auth)");
+    tracing::info!("  GET  /tokenvalid/ - Protected route (requires token auth)");
 
     if let Err(e) = axum::serve(listener, app).await {
         tracing::error!("Server error: {:?}", e);
