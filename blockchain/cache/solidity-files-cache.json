@@ -1,0 +1,41 @@
+{
+  "_format": "hh-sol-cache-2",
+  "files": {
+    "/home/ferdinand/Projects/repos/weather-boyz/blockchain/contracts/WeatherInsurance.sol": {
+      "lastModificationDate": 1750715893034,
+      "contentHash": "71f17aa4b46b7843a65654dd06d0d40a",
+      "sourceName": "contracts/WeatherInsurance.sol",
+      "solcConfig": {
+        "version": "0.8.28",
+        "settings": {
+          "evmVersion": "paris",
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.28"
+      ],
+      "artifacts": [
+        "WeatherInsurance"
+      ]
+    }
+  }
+}
