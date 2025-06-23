@@ -8,7 +8,7 @@ pub struct CreateUser {
     pub password: String,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct User {
     pub id: i32,
     pub name: String,
@@ -18,8 +18,15 @@ pub struct User {
     pub updated_at: Option<PrimitiveDateTime>,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Debug)]
 pub struct SignInData {
     pub email: String,
     pub password: String,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct CurrentUser {
+    pub email: String,
+    pub name: String,
+    pub password_hash: String,
 }
