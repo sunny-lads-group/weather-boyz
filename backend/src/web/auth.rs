@@ -25,6 +25,13 @@ pub struct Claims {
     pub email: String, // Email associated with the token
 }
 
+#[derive(Serialize, Deserialize)]
+pub struct SignInResponse {
+    pub success: bool,
+    pub message: String,
+    pub token: String,
+}
+
 #[derive(Debug)]
 pub struct AuthError {
     pub message: String,
@@ -34,8 +41,8 @@ pub struct AuthError {
 pub async fn sign_in_handler(
     Extension(pool): Extension<Pool<Postgres>>,
     Json(user_data): Json<SignInData>, // JSON payload containing sign-in data
-) -> Result<Json<String>, StatusCode> {
-    // Return type is a JSON-wrapped string or an HTTP status code
+) -> Result<Json<SignInResponse>, StatusCode> {
+    // Return type is a JSON-wrapped SignInResponse or an HTTP status code
 
     info!("Sign-in attempt received for email: {}", user_data.email);
     debug!("Sign-in request payload: {:?}", user_data);
@@ -121,15 +128,19 @@ pub async fn sign_in_handler(
     };
 
     info!("Sign-in successful for user: {}", user_data.email);
-    // Return the token as a JSON-wrapped string
-    Ok(Json(token))
+    // Return the response as a JSON object with success, message, and token
+    Ok(Json(SignInResponse {
+        success: true,
+        message: "Login successful".to_string(),
+        token,
+    }))
 }
 
 // Legacy function name for backward compatibility
 pub async fn sign_in(
     Extension(pool): Extension<Pool<Postgres>>,
     Json(user_data): Json<SignInData>,
-) -> Result<Json<String>, StatusCode> {
+) -> Result<Json<SignInResponse>, StatusCode> {
     sign_in_handler(Extension(pool), Json(user_data)).await
 }
 
@@ -223,8 +234,4 @@ pub async fn authorization_middleware(
 
 pub fn verify_password(password: &str, hash: &str) -> Result<bool, bcrypt::BcryptError> {
     verify(password, hash)
-}
-pub fn hash_password(password: &str) -> Result<String, bcrypt::BcryptError> {
-    let hash = hash(password, DEFAULT_COST)?;
-    Ok(hash)
 }
