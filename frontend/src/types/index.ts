@@ -21,3 +21,15 @@ export interface LoginResponse {
   message: string;
   token?: string;
 }
+
+export interface RegisterFormData {
+  name: string;
+  email: string;
+  password: string;
+}
+
+export interface RegisterResponse {
+  success: boolean;
+  message: string;
+  token?: string;
+}

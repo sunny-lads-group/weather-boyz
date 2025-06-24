@@ -4,6 +4,7 @@ import Home from '../../pages/Home';
 import AvailablePolicies from '../../pages/AvailablePolicies';
 import MyPolicies from '../../pages/MyPolicies';
 import Login from '../../pages/Login';
+import Register from '../../pages/Register';
 import { useWallet } from '../../context/WalletContext';
 import { useAuth } from '../../context/AuthContext';
 
@@ -20,9 +21,15 @@ const Layout = () => {
     );
   }
 
-  // If not authenticated, show login page
+  // If not authenticated, show login/register pages
   if (!isAuthenticated) {
-    return <Login />;
+    return (
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="*" element={<Navigate to="/login" replace />} />
+      </Routes>
+    );
   }
 
   // If authenticated, show the main app
