@@ -10,3 +10,14 @@ export interface Coordinates {
   lat: number;
   lng: number;
 }
+
+export interface LoginFormData {
+  email: string;
+  password: string;
+}
+
+export interface LoginResponse {
+  success: boolean;
+  message: string;
+  token?: string;
+}
