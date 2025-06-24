@@ -31,7 +31,7 @@ const WalletConnect = () => {
           </span>
           <button
             onClick={disconnectWallet}
-            className="text-white hover:text-orange-200 text-sm"
+            className="text-white hover:text-orange-200 text-sm cursor-pointer"
           >
             Disconnect
           </button>
