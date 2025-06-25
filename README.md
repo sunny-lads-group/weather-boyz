@@ -6,7 +6,7 @@
 
 A web3 application that allows users to buy weather insurance using weatherXM data to verify weather conditions and execute smart contracts.
 
-## Linux Setup
+## Project Setup
 
 **Requirements**
 
@@ -44,7 +44,7 @@ Start development database
 docker compose up -d
 ```
 
-Copy `.env` file in `weather-boyz/backend/` directory from the example file
+Create a `.env` file in `weather-boyz/backend/` directory from the example file
 
 ```bash
 cd backend
