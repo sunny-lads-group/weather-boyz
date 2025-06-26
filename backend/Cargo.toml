@@ -24,3 +24,9 @@ time = { version = "0.3", features = ["serde"] }
 jsonwebtoken = "9.3.0"
 bcrypt = "0.15.1"
 chrono = { version = "0.4.34", features = ["serde"] }
+
+[dev-dependencies]
+axum-test = "17.3"
+tokio-test = "0.4"
+testcontainers = "0.24"
+testcontainers-modules = { version = "0.12", features = ["postgres"] }
