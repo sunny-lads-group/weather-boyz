@@ -20,7 +20,7 @@ const WalletConnect = () => {
           disabled={isConnecting}
           className="bg-white text-orange-500 px-4 py-2 rounded-lg font-medium
                      hover:bg-orange-100 transition-colors duration-200
-                     disabled:opacity-50 disabled:cursor-not-allowed"
+                     disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
         >
           {isConnecting ? 'Connecting...' : 'Connect Wallet'}
         </button>
@@ -31,7 +31,7 @@ const WalletConnect = () => {
           </span>
           <button
             onClick={disconnectWallet}
-            className="text-white hover:text-orange-200 text-sm"
+            className="text-white hover:text-orange-200 text-sm cursor-pointer"
           >
             Disconnect
           </button>
