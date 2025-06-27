@@ -51,7 +51,12 @@ cd backend
 cp .env.example .env
 ```
 
-Create database
+Install sqlx-cli
+```bash
+cargo install sqlx-cli
+```
+
+Create database with sqlx-cli
 
 ```bash
 sqlx database create
