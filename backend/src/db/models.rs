@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 use sqlx::types::time::PrimitiveDateTime;
+use rust_decimal::Decimal;
 
 #[derive(Serialize, Deserialize)]
 pub struct CreateUser {
@@ -29,6 +30,181 @@ pub struct CurrentUser {
     pub email: String,
     pub name: String,
     pub password_hash: String,
+}
+
+// ============================================================================
+// INSURANCE POLICY MODELS
+// ============================================================================
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct PolicyTemplate {
+    pub id: i32,
+    pub template_name: String,
+    pub description: Option<String>,
+    pub policy_type: String,
+    pub default_conditions: Option<serde_json::Value>,
+    pub min_coverage_amount: Decimal,
+    pub max_coverage_amount: Decimal,
+    pub base_premium_rate: Decimal,
+    pub is_active: Option<bool>,
+    pub created_at: Option<PrimitiveDateTime>,
+    pub updated_at: Option<PrimitiveDateTime>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct CreatePolicyTemplate {
+    pub template_name: String,
+    pub description: Option<String>,
+    pub policy_type: String,
+    pub default_conditions: Option<serde_json::Value>,
+    pub min_coverage_amount: Decimal,
+    pub max_coverage_amount: Decimal,
+    pub base_premium_rate: Decimal,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct InsurancePolicy {
+    pub id: i32,
+    pub user_id: i32,
+    pub policy_template_id: Option<i32>,
+    pub policy_name: String,
+    pub policy_type: String,
+    pub location_latitude: Decimal,
+    pub location_longitude: Decimal,
+    pub location_h3_index: Option<String>,
+    pub location_name: Option<String>,
+    pub coverage_amount: Decimal,
+    pub premium_amount: Decimal,
+    pub currency: Option<String>,
+    pub start_date: PrimitiveDateTime,
+    pub end_date: PrimitiveDateTime,
+    pub status: Option<String>,
+    pub weather_station_id: Option<String>,
+    pub smart_contract_address: Option<String>,
+    pub purchase_transaction_hash: Option<String>,
+    pub created_at: Option<PrimitiveDateTime>,
+    pub updated_at: Option<PrimitiveDateTime>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct CreateInsurancePolicy {
+    pub user_id: i32,
+    pub policy_template_id: Option<i32>,
+    pub policy_name: String,
+    pub policy_type: String,
+    pub location_latitude: Decimal,
+    pub location_longitude: Decimal,
+    pub location_h3_index: Option<String>,
+    pub location_name: Option<String>,
+    pub coverage_amount: Decimal,
+    pub premium_amount: Decimal,
+    pub currency: Option<String>,
+    pub start_date: PrimitiveDateTime,
+    pub end_date: PrimitiveDateTime,
+    pub weather_station_id: Option<String>,
+    pub smart_contract_address: Option<String>,
+    pub purchase_transaction_hash: Option<String>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct PolicyCondition {
+    pub id: i32,
+    pub policy_id: i32,
+    pub condition_type: String,
+    pub operator: String,
+    pub threshold_value: Decimal,
+    pub measurement_unit: String,
+    pub measurement_period: String,
+    pub consecutive_days: Option<i32>,
+    pub created_at: Option<PrimitiveDateTime>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct CreatePolicyCondition {
+    pub policy_id: i32,
+    pub condition_type: String,
+    pub operator: String,
+    pub threshold_value: Decimal,
+    pub measurement_unit: String,
+    pub measurement_period: String,
+    pub consecutive_days: Option<i32>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct WeatherData {
+    pub id: i32,
+    pub station_id: String,
+    pub recorded_at: PrimitiveDateTime,
+    pub temperature: Option<Decimal>,
+    pub humidity: Option<Decimal>,
+    pub precipitation: Option<Decimal>,
+    pub wind_speed: Option<Decimal>,
+    pub wind_direction: Option<Decimal>,
+    pub atmospheric_pressure: Option<Decimal>,
+    pub data_source: Option<String>,
+    pub raw_data: Option<serde_json::Value>,
+    pub quality_score: Option<i32>,
+    pub created_at: Option<PrimitiveDateTime>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct CreateWeatherData {
+    pub station_id: String,
+    pub recorded_at: PrimitiveDateTime,
+    pub temperature: Option<Decimal>,
+    pub humidity: Option<Decimal>,
+    pub precipitation: Option<Decimal>,
+    pub wind_speed: Option<Decimal>,
+    pub wind_direction: Option<Decimal>,
+    pub atmospheric_pressure: Option<Decimal>,
+    pub data_source: Option<String>,
+    pub raw_data: Option<serde_json::Value>,
+    pub quality_score: Option<i32>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct PolicyClaim {
+    pub id: i32,
+    pub policy_id: i32,
+    pub claim_amount: Decimal,
+    pub claim_status: Option<String>,
+    pub trigger_date: PrimitiveDateTime,
+    pub trigger_period_start: Option<PrimitiveDateTime>,
+    pub trigger_period_end: Option<PrimitiveDateTime>,
+    pub verification_data: Option<serde_json::Value>,
+    pub evaluated_at: Option<PrimitiveDateTime>,
+    pub approved_at: Option<PrimitiveDateTime>,
+    pub rejected_at: Option<PrimitiveDateTime>,
+    pub rejection_reason: Option<String>,
+    pub payout_transaction_hash: Option<String>,
+    pub payout_block_number: Option<i32>,
+    pub created_at: Option<PrimitiveDateTime>,
+    pub updated_at: Option<PrimitiveDateTime>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct CreatePolicyClaim {
+    pub policy_id: i32,
+    pub claim_amount: Decimal,
+    pub trigger_date: PrimitiveDateTime,
+    pub trigger_period_start: Option<PrimitiveDateTime>,
+    pub trigger_period_end: Option<PrimitiveDateTime>,
+    pub verification_data: Option<serde_json::Value>,
+}
+
+// Helper structs for API responses
+#[derive(Serialize, Deserialize, Debug)]
+pub struct PolicyWithConditions {
+    #[serde(flatten)]
+    pub policy: InsurancePolicy,
+    pub conditions: Vec<PolicyCondition>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct PolicyWithClaims {
+    #[serde(flatten)]
+    pub policy: InsurancePolicy,
+    pub claims: Vec<PolicyClaim>,
 }
 
 #[cfg(test)]
