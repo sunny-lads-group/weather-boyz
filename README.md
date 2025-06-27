@@ -6,41 +6,114 @@
 
 A web3 application that allows users to buy weather insurance using weatherXM data to verify weather conditions and execute smart contracts.
 
-## Setting up the Database
+## Linux Setup
 
-1. Download Docker
+**Requirements**
 
-2. Create a docker-compose.yml file in `backend/docker/`. Use the provided `docker-compose.yml.sample` file and change the password as need be.
+- [Docker](https://docs.docker.com/desktop/setup/install/linux/)
+- [Rust + Cargo](https://www.rust-lang.org/tools/install)
+- [Node.js + npm + nvm](https://nodejs.org/en/download)
+- [MetaMask](https://chromewebstore.google.com/detail/metamask/nkbihfbeogaeaoehlefnkodbefgpgknn?hl=en&pli=1)
 
-3. Create a `.env` file in `/backend`. Add the following lines to it:
+<br>
 
-   ```
-   DATABASE_URL=postgres://<username>:<password>@<host>:<port>/<database>
-   JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
-   ```
+**Recommended**
 
-   Replacing the placeholders with the values in your `docker-compose.yml` file.
+- [Beekeeper Studio](https://www.beekeeperstudio.io/get)
+- [CodeLLDB](https://marketplace.visualstudio.com/items?itemName=vadimcn.vscode-lldb)
+- [Prettier](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode)
 
-   For example, this would be value when we use the default values from the `docker-compose.yml.sample` file.
+<br>
 
-   ```
-   DATABASE_URL=postgres://postgres:password@localhost:5432/weather-boyz-db
-   JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
-   ```
+**VS Code Extensions**
 
-4. Cd into `backend/docker/` and run `docker-compose up -d`.
-   Running that command with the `-d` flag means that it will be detached from the terminal and run in the background.
+- [Rust Analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)
+- [Even Better TOML](https://marketplace.visualstudio.com/items?itemName=tamasfe.even-better-toml)
+- [solidity](https://marketplace.visualstudio.com/items?itemName=JuanBlanco.solidity)
+- [Solidity](https://marketplace.visualstudio.com/items?itemName=NomicFoundation.hardhat-solidity)
+- [Tailwind CSS IntelliSense](https://marketplace.visualstudio.com/items?itemName=bradlc.vscode-tailwindcss)
+- [YAML](https://marketplace.visualstudio.com/items?itemName=redhat.vscode-yaml)
 
-5. Install the sqlx-cli. You can do this globally via:
+### Backend Setup
 
-   ```
-   cargo install sqlx-cli --no-default-features --features native-tls,postgres
-   ```
+**Set up database**
 
-   For our database, we will be using postgres.
+Start development database
 
-6. Ensure your terminal is within the `/backend` folder. Assuming you have created the docker container, you can now run `sqlx database create` to create our database. This will create our database.
+```bash
+docker compose up -d
+```
 
-7. Finally run `sqlx migrate run`. This will run the migration files within `backend/migrations`.
+Copy `.env` file in `weather-boyz/backend/` directory from the example file
 
-> If you want to look at the Database in Docker, search for "postgres" in the searchbar at the top (If your container is active, you should be able to find an option to activate a terminal for it.) or use the 'Exec' option if you click on your used container. From there, you can sign into the postgres db with `psql -U USERNAMEHERE`.
+```bash
+cd backend
+cp .env.example .env
+```
+
+Create database
+
+```bash
+sqlx database create
+```
+
+Run migrations
+
+```bash
+sqlx migrate run
+```
+
+Run the backend server
+
+```bash
+cargo run
+```
+
+### Frontend Setup
+
+Copy `.env` file in `weather-boyz/frontend/` directory from the example file
+
+```bash
+cd frontend
+cp .env.example .env
+```
+
+Install dependencies
+
+```bash
+npm install
+```
+
+Run the development server
+
+```bash
+npm run dev
+```
+
+### Blockchain Setup
+
+copy `.env` file in `weather-boyz/blockchain/` directory from the example file
+
+```bash
+cd blockchain
+cp .env.example .env
+```
+
+Install dependencies
+
+```bash
+npm install
+```
+
+Run the Hardhat node
+
+```bash
+npx hardhat node
+```
+
+When node is running, it will output a list of accounts with their private keys. Copy one of the private keys and add it to your MetaMask wallet. You will have to add the local network manually in MetaMask with the following settings:
+
+- Network Name: `Hardhat Local`
+- New RPC URL: `http://127.0.0:8545`
+- Chain ID: `31337`
+- Currency Symbol: `ETH`
