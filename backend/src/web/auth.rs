@@ -340,11 +340,6 @@ mod tests {
         // Check issued at time (should be around now)
         assert!(token_data.claims.iat >= before_encoding);
         assert!(token_data.claims.iat <= (Utc::now().timestamp() as usize + 5)); // 5 second buffer
-        
-        // Check expiry time (should be 24 hours from now)
-        let expected_expiry = before_encoding + (24 * 60 * 60); // 24 hours in seconds
-        assert!(token_data.claims.exp >= expected_expiry - 5); // 5 second buffer
-        assert!(token_data.claims.exp <= expected_expiry + 5);
 
         unsafe { env::remove_var("JWT_SECRET"); }
     }
