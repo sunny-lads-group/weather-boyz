@@ -153,7 +153,7 @@ pub fn encode_jwt(email: String) -> Result<String, StatusCode> {
     })?;
 
     let now = Utc::now();
-    let expire: chrono::TimeDelta = Duration::hours(24);
+    let expire: chrono::TimeDelta = Duration::hours(2);
     let exp: usize = (now + expire).timestamp() as usize;
     let iat: usize = now.timestamp() as usize;
     let claim = Claims { iat, exp, email };

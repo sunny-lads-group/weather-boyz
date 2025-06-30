@@ -2,10 +2,12 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { type LoginFormData, type LoginResponse } from '../types';
 import { useAuth } from '../context/AuthContext';
+import { useNotifications } from '../context/NotificationContext';
 
 const Login = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
+  const { addNotification } = useNotifications();
   const [formData, setFormData] = useState<LoginFormData>({
     email: '',
     password: ''
@@ -66,6 +68,11 @@ const Login = () => {
 
       if (response.ok) {
         setSuccess('Login successful!');
+        addNotification({
+          type: 'success',
+          title: 'Welcome back!',
+          message: 'You have been successfully logged in.'
+        });
         // Use the AuthContext to handle login
         if (data.token) {
           login(data.token, { id: 'user-' + Date.now(), email: formData.email });
@@ -77,9 +84,19 @@ const Login = () => {
         console.log('Login successful:', data);
       } else {
         setError(data.message || 'Login failed. Please try again.');
+        addNotification({
+          type: 'error',
+          title: 'Login Failed',
+          message: data.message || 'Please check your credentials and try again.'
+        });
       }
     } catch (err) {
       setError('Network error. Please check your connection and try again.');
+      addNotification({
+        type: 'error',
+        title: 'Connection Error',
+        message: 'Please check your internet connection and try again.'
+      });
       console.error('Login error:', err);
     } finally {
       setIsLoading(false);
