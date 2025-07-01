@@ -30,3 +30,14 @@ pub struct CurrentUser {
     pub name: String,
     pub password_hash: String,
 }
+
+
+pub struct AvailablePolicy{
+    pub id: i32,
+    pub name: String,
+    pub description: String,
+    pub payout: f64,
+    pub duration: i32,
+    pub event_type: String,
+    pub threshold: f64,
+}

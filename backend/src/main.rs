@@ -27,6 +27,12 @@ async fn main() {
         }
     };
 
+    match db::policies_queries::seed_available_policy(&pool).await {
+        Ok(_) => tracing::info!("Seeding successful or skipped"),
+        Err(e) => tracing::error!("Failed to seed database: {:?}", e),
+    }
+
+
     let cors = CorsLayer::permissive();
     tracing::info!("CORS layer configured");
 
@@ -66,3 +72,5 @@ async fn main() {
         std::process::exit(1);
     }
 }
+
+
