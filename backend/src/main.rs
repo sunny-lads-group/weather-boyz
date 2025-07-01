@@ -6,6 +6,9 @@ use db::user_queries::create_user;
 
 mod web;
 
+#[cfg(test)]
+mod test_utils;
+
 #[tokio::main]
 async fn main() {
     // Load environment variables from .env file

@@ -122,3 +122,10 @@ When node is running, it will output a list of accounts with their private keys.
 - New RPC URL: `http://127.0.0:8545`
 - Chain ID: `31337`
 - Currency Symbol: `ETH`
+
+## Backend Testing
+Run the tests for the backend using: 
+
+```cargo test -- --test-threads=1```
+
+We use a single thread as concurrency issues occur when running all of the tests asynchronously.

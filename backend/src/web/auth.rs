@@ -17,7 +17,7 @@ use tracing::{debug, error, info, warn};
 use crate::db::models::{SignInData, User};
 use crate::db::user_queries;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 // Define a structure for holding claims data used in JWT tokens
 pub struct Claims {
     pub exp: usize,    // Expiry time of the token
@@ -234,4 +234,170 @@ pub async fn authorization_middleware(
 
 pub fn verify_password(password: &str, hash: &str) -> Result<bool, bcrypt::BcryptError> {
     verify(password, hash)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::env;
+
+    #[test]
+    fn test_password_hashing_creates_different_hashes() {
+        let password = "test_password_123";
+        let hash1 = hash(password, DEFAULT_COST).unwrap();
+        let hash2 = hash(password, DEFAULT_COST).unwrap();
+        
+        // Same password should create different hashes due to salt
+        assert_ne!(hash1, hash2);
+        
+        // Both hashes should verify correctly
+        assert!(verify_password(password, &hash1).unwrap());
+        assert!(verify_password(password, &hash2).unwrap());
+    }
+
+    #[test]
+    fn test_password_verification_success() {
+        let password = "correct_password";
+        let hash = hash(password, DEFAULT_COST).unwrap();
+
+        let result = verify_password(password, &hash);
+        assert!(result.is_ok());
+        assert!(result.unwrap());
+    }
+
+    #[test]
+    fn test_password_verification_failure() {
+        let correct_password = "correct_password";
+        let wrong_password = "wrong_password";
+        let hash = hash(correct_password, DEFAULT_COST).unwrap();
+
+        let result = verify_password(wrong_password, &hash);
+        assert!(result.is_ok());
+        assert!(!result.unwrap());
+    }
+
+    #[test]
+    fn test_password_verification_with_invalid_hash() {
+        let password = "test_password";
+        let invalid_hash = "not_a_valid_bcrypt_hash";
+
+        let result = verify_password(password, invalid_hash);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_empty_password_hashing() {
+        let empty_password = "";
+        let result = hash(empty_password, DEFAULT_COST);
+
+        // bcrypt should handle empty passwords
+        assert!(result.is_ok());
+
+        // Verify the empty password works
+        let hash = result.unwrap();
+        assert!(verify_password("", &hash).unwrap());
+        assert!(!verify_password("not_empty", &hash).unwrap());
+    }
+
+    #[test]
+    fn test_jwt_encode_decode_roundtrip() {
+        // Set JWT secret for testing
+        unsafe { env::set_var("JWT_SECRET", "test_secret_key_for_jwt_testing"); }
+
+        let email = "test@example.com".to_string();
+
+        // Test encoding
+        let token_result = encode_jwt(email.clone());
+        assert!(token_result.is_ok());
+
+        let token = token_result.unwrap();
+        assert!(!token.is_empty());
+
+        // Test decoding
+        let decode_result = decode_jwt(token);
+        assert!(decode_result.is_ok());
+
+        let token_data = decode_result.unwrap();
+        assert_eq!(token_data.claims.email, email);
+
+        // Clean up
+        unsafe { env::remove_var("JWT_SECRET"); }
+    }
+
+    #[test]
+    fn test_jwt_token_contains_correct_claims() {
+        unsafe { env::set_var("JWT_SECRET", "test_secret_key_for_claims_testing"); }
+
+        let email = "claims@test.com".to_string();
+        let before_encoding = Utc::now().timestamp() as usize;
+
+        let token = encode_jwt(email.clone()).unwrap();
+        let token_data = decode_jwt(token).unwrap();
+
+        // Check email claim
+        assert_eq!(token_data.claims.email, email);
+
+        // Check issued at time (should be around now)
+        assert!(token_data.claims.iat >= before_encoding);
+        assert!(token_data.claims.iat <= (Utc::now().timestamp() as usize + 5)); // 5 second buffer
+
+        unsafe { env::remove_var("JWT_SECRET"); }
+    }
+
+    #[test]
+    fn test_jwt_encode_without_secret() {
+        // Ensure no JWT_SECRET is set
+        unsafe { env::remove_var("JWT_SECRET"); }
+        
+        let email = "test@example.com".to_string();
+        let result = encode_jwt(email);
+        
+        // Should fail without JWT_SECRET
+        assert!(result.is_err());
+        assert_eq!(result.unwrap_err(), StatusCode::INTERNAL_SERVER_ERROR);
+    }
+
+    #[test]
+    fn test_jwt_decode_with_invalid_token() {
+        unsafe { env::set_var("JWT_SECRET", "test_secret_for_invalid_token_test"); }
+        
+        let invalid_token = "invalid.jwt.token".to_string();
+        let result = decode_jwt(invalid_token);
+        
+        assert!(result.is_err());
+        assert_eq!(result.unwrap_err(), StatusCode::INTERNAL_SERVER_ERROR);
+        
+        unsafe { env::remove_var("JWT_SECRET"); }
+    }
+
+    #[test]
+    fn test_jwt_decode_without_secret() {
+        // Ensure no JWT_SECRET is set
+        unsafe { env::remove_var("JWT_SECRET"); }
+        
+        let token = "some.jwt.token".to_string();
+        let result = decode_jwt(token);
+        
+        // Should fail without JWT_SECRET
+        assert!(result.is_err());
+        assert_eq!(result.unwrap_err(), StatusCode::INTERNAL_SERVER_ERROR);
+    }
+
+    #[test]
+    fn test_jwt_with_empty_email() {
+        unsafe { env::set_var("JWT_SECRET", "test_secret_for_empty_email"); }
+        
+        let empty_email = "".to_string();
+        let token_result = encode_jwt(empty_email.clone());
+        
+        // Should succeed with empty email (validation happens elsewhere)
+        assert!(token_result.is_ok());
+        
+        let token = token_result.unwrap();
+        let decode_result = decode_jwt(token);
+        assert!(decode_result.is_ok());
+        assert_eq!(decode_result.unwrap().claims.email, empty_email);
+        
+        unsafe { env::remove_var("JWT_SECRET"); }
+    }
 }

@@ -33,3 +33,17 @@ export interface RegisterResponse {
   message: string;
   token?: string;
 }
+
+export interface PolicyTemplate {
+  id: number;
+  template_name: string;
+  description?: string;
+  policy_type: string;
+  default_conditions?: any;
+  min_coverage_amount: string;
+  max_coverage_amount: string;
+  base_premium_rate: string;
+  is_active?: boolean;
+  created_at?: string;
+  updated_at?: string;
+}

@@ -19,7 +19,18 @@ interface Cell {
   };
 }
 
-const LocationInput = () => {
+export interface LocationData {
+  latitude: string;
+  longitude: string;
+  weatherData: WeatherData | null;
+  h3Index?: string;
+}
+
+interface LocationInputProps {
+  onLocationSelect?: (locationData: LocationData) => void;
+}
+
+const LocationInput = ({ onLocationSelect }: LocationInputProps) => {
   const [latitude, setLatitude] = useState<string>('');
   const [longitude, setLongitude] = useState<string>('');
   const [latError, setLatError] = useState<string>('');
@@ -83,6 +94,16 @@ const LocationInput = () => {
       };
 
       setWeatherData(weatherData);
+
+      // Call the callback with the collected data
+      if (onLocationSelect) {
+        onLocationSelect({
+          latitude: lat,
+          longitude: long,
+          weatherData: weatherData,
+          h3Index: userHex
+        });
+      }
     } catch (error) {
       console.error('Error:', error);
     } finally {

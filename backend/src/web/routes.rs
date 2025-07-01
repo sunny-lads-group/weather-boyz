@@ -31,5 +31,9 @@ pub async fn app() -> Router {
             "/tokenvalid/",
             get(services::hello).layer(middleware::from_fn(auth::authorization_middleware)),
         )
+        .route(
+            "/policy-templates",
+            get(services::get_policy_templates).layer(middleware::from_fn(auth::authorization_middleware)),
+        )
         .layer(middleware::from_fn(logging_middleware))
 }
