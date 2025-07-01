@@ -12,6 +12,7 @@ contract WeatherInsurance {
         bool paid;
         int256 threshold;
         string eventType;
+        string h3HexId;
     }
 
     mapping(uint => Policy) public policies;
@@ -21,7 +22,7 @@ contract WeatherInsurance {
         owner = msg.sender;
     }
 
-    function buyPolicy(uint duration, uint payout, int256 threshold, string memory eventType) public payable {
+    function buyPolicy(uint duration, uint payout, int256 threshold, string memory eventType, string memory h3HexId) public payable {
         require(msg.value >= payout / 10, "Premium too low");
 
         policies[policyCount] = Policy(
@@ -31,7 +32,8 @@ contract WeatherInsurance {
             block.timestamp + duration,
             false,
             threshold,
-            eventType
+            eventType,
+            h3HexId
         );
 
         policyCount++;
