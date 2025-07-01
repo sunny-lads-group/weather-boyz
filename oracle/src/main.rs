@@ -1,15 +1,12 @@
-// This is just starter code.
-
-
-use ethers::prelude::*;
-use std::sync::Arc;
 use dotenv::dotenv;
+use ethers::prelude::*;
 use std::env;
+use std::sync::Arc;
 
 abigen!(
     WeatherInsurance,
     r#"[
-        function triggerPayout(uint256, int256, uint256) external
+        function trigger(uint256, int256) external
     ]"#,
 );
 
@@ -33,18 +30,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let contract = WeatherInsurance::new(contract_addr, client.clone());
 
     // Simulate oracle reading
-    let policy_id: u64 = 0;
-    let observed_temp: i64 = -5;
-    let obs_time: u64 = 1712345678;
+    let policy_id = U256::from(0);
+    let observed_temp = I256::from(-5);
 
-    let tx = contract
-        .trigger_payout(policy_id, observed_temp, obs_time)
-        .send()
-        .await?;
+    // Split into separate steps as suggested by compiler
+    let call = contract.trigger(policy_id, observed_temp);
+    let pending_tx = call.send().await?;
 
-    println!("TX sent: {:?}", tx.tx_hash());
+    println!("TX sent: {:?}", pending_tx.tx_hash());
 
-    let receipt = tx.await?;
+    // Wait for confirmation
+    let receipt = pending_tx.await?;
     println!("Receipt: {:?}", receipt);
 
     Ok(())
