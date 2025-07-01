@@ -1,15 +1,15 @@
 import { useState, useEffect } from "react";
 import LocationInput from "../components/weather/LocationInput";
+import type { LocationData } from "../components/weather/LocationInput";
 import PolicyTemplateCard from "../components/policy/PolicyTemplateCard";
 import type { PolicyTemplate } from "../types";
 import { fetchPolicyTemplates } from "../services/policyService";
-import { useNotifications } from "../context/NotificationContext";
 
 const AvailablePolicies = () => {
-  const [currentStep, setCurrentStep] = useState(2); // Start on step 2 to show policies directly
+  const [currentStep, setCurrentStep] = useState(1); // Start on step 1 for location selection
   const [policyTemplates, setPolicyTemplates] = useState<PolicyTemplate[]>([]);
   const [loading, setLoading] = useState(false);
-  const { addNotification } = useNotifications();
+  const [locationData, setLocationData] = useState<LocationData | null>(null);
 
   const steps = [
     { number: 1, title: "Select Location" },
@@ -25,11 +25,6 @@ const AvailablePolicies = () => {
           setPolicyTemplates(templates);
         } catch (error) {
           console.error('Failed to load policy templates:', error);
-          addNotification({
-            type: 'error',
-            title: 'Failed to Load Policies',
-            message: 'Unable to fetch available policy templates. Please try again.',
-          });
         } finally {
           setLoading(false);
         }
@@ -37,16 +32,40 @@ const AvailablePolicies = () => {
     };
 
     loadPolicyTemplates();
-  }, [currentStep, policyTemplates.length, addNotification]);
+  }, [currentStep, policyTemplates.length]);
+
+  const handleLocationSelect = (data: LocationData) => {
+    console.log('Location data received:', data);
+    setLocationData(data);
+  };
 
   const renderStepContent = () => {
     switch (currentStep) {
       case 1:
-        return <LocationInput />;
+        return <LocationInput onLocationSelect={handleLocationSelect} />;
       case 2:
         return (
           <div className="mt-4">
             <h2 className="text-xl font-semibold mb-6">Available Policy Templates</h2>
+            
+            {locationData && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                <h3 className="text-sm font-medium text-blue-800 mb-2">Selected Location</h3>
+                <div className="text-sm text-blue-700">
+                  <p><strong>Coordinates:</strong> {locationData.latitude}, {locationData.longitude}</p>
+                  {locationData.h3Index && <p><strong>H3 Index:</strong> {locationData.h3Index}</p>}
+                  {locationData.weatherData && (
+                    <div className="mt-2 grid grid-cols-2 md:grid-cols-5 gap-2 text-xs">
+                      <span>🌡️ {locationData.weatherData.temperature}°C</span>
+                      <span>💧 {locationData.weatherData.humidity}%</span>
+                      <span>💨 {locationData.weatherData.wind_speed} m/s</span>
+                      <span>🌧️ {locationData.weatherData.precipitation} mm</span>
+                      <span>🌡️ Feels {locationData.weatherData.feels_like.toFixed(0)}°C</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
             
             {loading ? (
               <div className="flex items-center justify-center py-12">
@@ -144,14 +163,14 @@ const AvailablePolicies = () => {
         </button>
         <button
           onClick={() => setCurrentStep(Math.min(2, currentStep + 1))}
-          disabled={currentStep === 2}
+          disabled={currentStep === 2 || (currentStep === 1 && !locationData)}
           className={`px-4 py-2 rounded ${
-            currentStep === 2
+            currentStep === 2 || (currentStep === 1 && !locationData)
               ? "bg-gray-300 cursor-not-allowed"
               : "bg-blue-500 text-white hover:bg-blue-600"
           }`}
         >
-          Next
+          {currentStep === 1 && !locationData ? "Select Location First" : "Next"}
         </button>
       </div>
     </div>
