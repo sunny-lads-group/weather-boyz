@@ -1,9 +1,15 @@
 import { NavLink } from 'react-router-dom';
 import { useWallet } from '../../context/WalletContext';
+import { useAuth } from '../../context/AuthContext';
 import WalletConnect from '../WalletConnect';
 
 const Navbar = () => {
   const { isConnected } = useWallet();
+  const { logout, user } = useAuth();
+
+  const handleLogout = () => {
+    logout();
+  };
 
   return (
     <nav className="bg-orange-500 px-4 py-3 shadow-lg">
@@ -43,6 +49,19 @@ const Navbar = () => {
             </>
           )}
           
+          <div className="flex items-center space-x-4">
+            {user && (
+              <span className="text-white">
+                Welcome, {user.email}
+              </span>
+            )}
+            <button
+              onClick={handleLogout}
+              className="text-white hover:text-orange-200 cursor-pointer text-sm"
+            >
+              Logout
+            </button>
+          </div>
           <WalletConnect />
         </div>
       </div>

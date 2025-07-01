@@ -1,32 +1,40 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { type LoginFormData, type LoginResponse } from '../types';
+import { type RegisterFormData, type RegisterResponse } from '../types';
 import { useAuth } from '../context/AuthContext';
-import { useNotifications } from '../context/NotificationContext';
 
-const Login = () => {
+const Register = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
-  const { addNotification } = useNotifications();
-  const [formData, setFormData] = useState<LoginFormData>({
+  const [formData, setFormData] = useState<RegisterFormData>({
+    name: '',
     email: '',
     password: ''
   });
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>('');
   const [success, setSuccess] = useState<string>('');
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    if (name === 'confirmPassword') {
+      setConfirmPassword(value);
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
     // Clear error when user starts typing
     if (error) setError('');
   };
 
   const validateForm = (): boolean => {
+    if (!formData.name.trim()) {
+      setError('Name is required');
+      return false;
+    }
     if (!formData.email.trim()) {
       setError('Email is required');
       return false;
@@ -43,6 +51,10 @@ const Login = () => {
       setError('Password must be at least 6 characters long');
       return false;
     }
+    if (formData.password !== confirmPassword) {
+      setError('Passwords do not match');
+      return false;
+    }
     return true;
   };
 
@@ -56,7 +68,7 @@ const Login = () => {
     setSuccess('');
 
     try {
-      const response = await fetch('http://localhost:3000/signin', {
+      const response = await fetch('http://localhost:3000/createUser', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -64,40 +76,34 @@ const Login = () => {
         body: JSON.stringify(formData),
       });
 
-      const data: LoginResponse = await response.json();
+      const data: RegisterResponse = await response.json();
 
       if (response.ok) {
-        setSuccess('Login successful!');
-        addNotification({
-          type: 'success',
-          title: 'Welcome back!',
-          message: 'You have been successfully logged in.'
-        });
-        // Use the AuthContext to handle login
+        setSuccess('Account created successfully!');
+        // Use the AuthContext to handle login if token is provided
         if (data.token) {
-          login(data.token, { id: 'user-' + Date.now(), email: formData.email });
-          // Redirect to home page after successful login
+          login(data.token, { 
+            id: 'user-' + Date.now(), 
+            email: formData.email,
+            name: formData.name 
+          });
+          // Redirect to home page after successful registration
           setTimeout(() => {
             navigate('/');
           }, 1000);
+        } else {
+          // If no token provided, redirect to login page
+          setTimeout(() => {
+            navigate('/login');
+          }, 1000);
         }
-        console.log('Login successful:', data);
+        console.log('Registration successful:', data);
       } else {
-        setError(data.message || 'Login failed. Please try again.');
-        addNotification({
-          type: 'error',
-          title: 'Login Failed',
-          message: data.message || 'Please check your credentials and try again.'
-        });
+        setError(data.message || 'Registration failed. Please try again.');
       }
     } catch (err) {
       setError('Network error. Please check your connection and try again.');
-      addNotification({
-        type: 'error',
-        title: 'Connection Error',
-        message: 'Please check your internet connection and try again.'
-      });
-      console.error('Login error:', err);
+      console.error('Registration error:', err);
     } finally {
       setIsLoading(false);
     }
@@ -108,15 +114,32 @@ const Login = () => {
       <div className="max-w-md w-full space-y-8">
         <div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Sign in to your account
+            Create your account
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            Log in to Weather Boyz and start protecting your assets
+            Join Weather Boyz and start protecting your assets
           </p>
         </div>
         
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="rounded-md shadow-sm -space-y-px">
+            <div>
+              <label htmlFor="name" className="sr-only">
+                Full Name
+              </label>
+              <input
+                id="name"
+                name="name"
+                type="text"
+                autoComplete="name"
+                required
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-orange-500 focus:border-orange-500 focus:z-10 sm:text-sm"
+                placeholder="Full Name"
+                value={formData.name}
+                onChange={handleInputChange}
+                disabled={isLoading}
+              />
+            </div>
             <div>
               <label htmlFor="email" className="sr-only">
                 Email address
@@ -127,7 +150,7 @@ const Login = () => {
                 type="email"
                 autoComplete="email"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-orange-500 focus:border-orange-500 focus:z-10 sm:text-sm"
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-orange-500 focus:border-orange-500 focus:z-10 sm:text-sm"
                 placeholder="Email address"
                 value={formData.email}
                 onChange={handleInputChange}
@@ -142,11 +165,28 @@ const Login = () => {
                 id="password"
                 name="password"
                 type="password"
-                autoComplete="current-password"
+                autoComplete="new-password"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-orange-500 focus:border-orange-500 focus:z-10 sm:text-sm"
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-orange-500 focus:border-orange-500 focus:z-10 sm:text-sm"
                 placeholder="Password"
                 value={formData.password}
+                onChange={handleInputChange}
+                disabled={isLoading}
+              />
+            </div>
+            <div>
+              <label htmlFor="confirmPassword" className="sr-only">
+                Confirm Password
+              </label>
+              <input
+                id="confirmPassword"
+                name="confirmPassword"
+                type="password"
+                autoComplete="new-password"
+                required
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-orange-500 focus:border-orange-500 focus:z-10 sm:text-sm"
+                placeholder="Confirm Password"
+                value={confirmPassword}
                 onChange={handleInputChange}
                 disabled={isLoading}
               />
@@ -189,22 +229,22 @@ const Login = () => {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  Signing in...
+                  Creating account...
                 </div>
               ) : (
-                'Sign in'
+                'Create Account'
               )}
             </button>
           </div>
 
           <div className="text-center">
             <p className="text-sm text-gray-600">
-              Don't have an account?{' '}
+              Already have an account?{' '}
               <Link
-                to="/register"
+                to="/login"
                 className="font-medium text-orange-600 hover:text-orange-500"
               >
-                Create your account
+                Sign in here
               </Link>
             </p>
           </div>
@@ -214,4 +254,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default Register; 

@@ -1,8 +1,14 @@
 use crate::db::models::{CreateUser, User};
 use axum::http::StatusCode;
 use axum::{Json, extract::Extension};
+use bcrypt::{DEFAULT_COST, hash};
 use sqlx::{Error as SqlxError, Pool, Postgres};
 use tracing;
+
+// Helper function to hash passwords using bcrypt
+fn hash_password(password: &str) -> Result<String, bcrypt::BcryptError> {
+    hash(password, DEFAULT_COST)
+}
 
 pub async fn create_user(
     Extension(pool): Extension<Pool<Postgres>>,
@@ -27,14 +33,27 @@ pub async fn create_user(
         ));
     }
 
-    if new_user.password_hash.trim().is_empty() {
+    if new_user.password.trim().is_empty() {
         return Err((
             StatusCode::BAD_REQUEST,
             Json(serde_json::json!({
-                "error": "Password hash cannot be empty"
+                "error": "Password cannot be empty"
             })),
         ));
     }
+
+    // Hash the password
+    let password_hash = match hash_password(&new_user.password) {
+        Ok(hash) => hash,
+        Err(_) => {
+            return Err((
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(serde_json::json!({
+                    "error": "Failed to hash password"
+                })),
+            ));
+        }
+    };
 
     // Attempt to create user
     let user = sqlx::query_as!(
@@ -42,7 +61,7 @@ pub async fn create_user(
         "INSERT INTO users (name, email, password_hash) VALUES ($1, $2, $3) RETURNING id, name, email, password_hash, created_at, updated_at",
         new_user.name.trim(),
         new_user.email.trim().to_lowercase(),
-        new_user.password_hash
+        password_hash
     )
     .fetch_one(&pool)
     .await
@@ -84,4 +103,30 @@ pub async fn create_user(
 
     tracing::info!("Successfully created user with email: {}", user.email);
     Ok(Json(user))
+}
+
+pub async fn retrieve_user_by_email(
+    pool: &Pool<Postgres>,
+    email: &str,
+) -> Result<Option<User>, SqlxError> {
+    tracing::debug!("Looking up user by email: {}", email);
+
+    let user = sqlx::query_as!(
+        User,
+        "SELECT id, name, email, password_hash, created_at, updated_at FROM users WHERE email = $1",
+        email.trim().to_lowercase()
+    )
+    .fetch_optional(pool)
+    .await?;
+
+    match &user {
+        Some(user) => {
+            tracing::info!("User found in database for email: {}", email);
+        }
+        None => {
+            tracing::warn!("User not found in database for email: {}", email);
+        }
+    }
+
+    Ok(user)
 }
