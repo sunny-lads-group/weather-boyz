@@ -61,7 +61,7 @@ const PolicyTemplateCard = ({ template }: PolicyTemplateCardProps) => {
           <span className="text-2xl">{getPolicyTypeIcon(template.policy_type)}</span>
           <div>
             <h3 className="text-lg font-semibold text-gray-900">{template.template_name}</h3>
-            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getPolicyTypeColor(template.policy_type)}`}>
+            <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${getPolicyTypeColor(template.policy_type)}`}>
               {template.policy_type.toUpperCase()}
             </span>
           </div>
