@@ -1,10 +1,12 @@
 import { useState, useEffect, use } from 'react';
+import { useNavigate } from 'react-router-dom';
 import LocationInput from '../components/weather/LocationInput';
 import type { LocationData } from '../components/weather/LocationInput';
 import PolicyTemplateCard from '../components/policy/PolicyTemplateCard';
 import type { PolicyTemplate } from '../types';
 import { fetchPolicyTemplates } from '../services/policyService';
 import { useWallet } from '../context/WalletContext';
+import { useNotifications } from '../context/NotificationContext';
 import { BrowserProvider, parseEther } from 'ethers';
 import { getContract } from '../utils/contract';
 
@@ -14,6 +16,8 @@ const AvailablePolicies = () => {
   const [loading, setLoading] = useState(false);
   const [locationData, setLocationData] = useState<LocationData | null>(null);
   const wallet = useWallet();
+  const navigate = useNavigate();
+  const { addNotification } = useNotifications();
 
   const steps = [
     { number: 1, title: 'Select Location' },
@@ -45,7 +49,12 @@ const AvailablePolicies = () => {
 
   const handlePolicyPurchase = async (template: PolicyTemplate) => {
     if (!window.ethereum || !wallet) {
-      alert('Please connect your wallet first');
+      addNotification({
+        type: 'warning',
+        title: 'Wallet Required',
+        message: 'Please connect your wallet first to purchase a policy.',
+        duration: 5000
+      });
       return;
     }
 
@@ -76,11 +85,25 @@ const AvailablePolicies = () => {
       // Wait for transaction to be mined
       await tx.wait();
 
-      alert('Policy purchased successfully!');
+      addNotification({
+        type: 'success',
+        title: 'Policy Purchased Successfully!',
+        message: `Your weather insurance policy has been purchased. Transaction hash: ${tx.hash}`,
+        duration: 10000
+      });
+
+      // Redirect to home page after successful purchase
+      navigate('/');
+      
+      // TODO: Call the backend to create a policy
     } catch (error) {
       console.error('Error purchasing policy:', error);
-      alert('Failed to purchase policy. Please try again.');
-    } finally {
+      addNotification({
+        type: 'error',
+        title: 'Purchase Failed',
+        message: 'Failed to purchase policy. Please try again.',
+        duration: 5000
+      });
     }
   };
 

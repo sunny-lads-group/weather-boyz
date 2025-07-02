@@ -114,7 +114,7 @@ const PolicyTemplateCard = ({
             handlePolicyPurchase(template);
           }}
         >
-          Select Policy (Coming Soon)
+          Purchase Policy
         </button>
       </div>
     </div>
