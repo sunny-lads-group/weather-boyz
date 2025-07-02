@@ -1,10 +1,10 @@
-import { useState, useEffect, use } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import LocationInput from '../components/weather/LocationInput';
 import type { LocationData } from '../components/weather/LocationInput';
 import PolicyTemplateCard from '../components/policy/PolicyTemplateCard';
 import type { PolicyTemplate } from '../types';
-import { fetchPolicyTemplates } from '../services/policyService';
+import { fetchPolicyTemplates, createPolicy, type CreatePolicyRequest } from '../services/policyService';
 import { useWallet } from '../context/WalletContext';
 import { useNotifications } from '../context/NotificationContext';
 import { BrowserProvider, parseEther } from 'ethers';
@@ -85,17 +85,50 @@ const AvailablePolicies = () => {
       // Wait for transaction to be mined
       await tx.wait();
 
-      addNotification({
-        type: 'success',
-        title: 'Policy Purchased Successfully!',
-        message: `Your weather insurance policy has been purchased. Transaction hash: ${tx.hash}`,
-        duration: 10000
-      });
+      // Create policy in database after successful blockchain transaction
+      try {
+        const startDate = new Date();
+        const endDate = new Date();
+        endDate.setDate(startDate.getDate() + 30); // 30 days from now
+
+        const policyData: CreatePolicyRequest = {
+          policy_template_id: template.id,
+          policy_name: `${template.template_name} - ${locationData?.latitude}, ${locationData?.longitude}`,
+          policy_type: template.policy_type,
+          location_latitude: parseFloat(locationData?.latitude || '0'),
+          location_longitude: parseFloat(locationData?.longitude || '0'),
+          location_h3_index: locationData?.h3Index,
+          location_name: `${locationData?.latitude}, ${locationData?.longitude}`,
+          coverage_amount: parseFloat(template.max_coverage_amount),
+          premium_amount: parseFloat(template.max_coverage_amount) * 0.1, // 10% premium
+          currency: 'ETH',
+          start_date: startDate.toISOString(),
+          end_date: endDate.toISOString(),
+          smart_contract_address: await contract.getAddress(),
+          purchase_transaction_hash: tx.hash,
+        };
+
+        const createdPolicy = await createPolicy(policyData);
+        
+        addNotification({
+          type: 'success',
+          title: 'Policy Purchased Successfully!',
+          message: `Your weather insurance policy has been purchased and saved. Policy ID: ${createdPolicy.id}`,
+          duration: 10000
+        });
+      } catch (policyError) {
+        console.error('Error creating policy in database:', policyError);
+        
+        addNotification({
+          type: 'warning',
+          title: 'Policy Purchase Completed',
+          message: `Blockchain transaction successful (${tx.hash}) but failed to save policy details. Please contact support.`,
+          duration: 15000
+        });
+      }
 
       // Redirect to home page after successful purchase
       navigate('/');
-      
-      // TODO: Call the backend to create a policy
     } catch (error) {
       console.error('Error purchasing policy:', error);
       addNotification({

@@ -1,6 +1,17 @@
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize, Deserializer};
 use sqlx::types::time::PrimitiveDateTime;
 use rust_decimal::Decimal;
+use time::OffsetDateTime;
+
+fn deserialize_primitive_datetime<'de, D>(deserializer: D) -> Result<PrimitiveDateTime, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let s = String::deserialize(deserializer)?;
+    let offset_dt = OffsetDateTime::parse(&s, &time::format_description::well_known::Iso8601::DEFAULT)
+        .map_err(serde::de::Error::custom)?;
+    Ok(PrimitiveDateTime::new(offset_dt.date(), offset_dt.time()))
+}
 
 #[derive(Serialize, Deserialize)]
 pub struct CreateUser {
@@ -99,7 +110,30 @@ pub struct CreateInsurancePolicy {
     pub coverage_amount: Decimal,
     pub premium_amount: Decimal,
     pub currency: Option<String>,
+    #[serde(deserialize_with = "deserialize_primitive_datetime")]
     pub start_date: PrimitiveDateTime,
+    #[serde(deserialize_with = "deserialize_primitive_datetime")]
+    pub end_date: PrimitiveDateTime,
+    pub weather_station_id: Option<String>,
+    pub smart_contract_address: Option<String>,
+    pub purchase_transaction_hash: Option<String>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct CreateInsurancePolicyRequest {
+    pub policy_template_id: Option<i32>,
+    pub policy_name: String,
+    pub policy_type: String,
+    pub location_latitude: Decimal,
+    pub location_longitude: Decimal,
+    pub location_h3_index: Option<String>,
+    pub location_name: Option<String>,
+    pub coverage_amount: Decimal,
+    pub premium_amount: Decimal,
+    pub currency: Option<String>,
+    #[serde(deserialize_with = "deserialize_primitive_datetime")]
+    pub start_date: PrimitiveDateTime,
+    #[serde(deserialize_with = "deserialize_primitive_datetime")]
     pub end_date: PrimitiveDateTime,
     pub weather_station_id: Option<String>,
     pub smart_contract_address: Option<String>,
