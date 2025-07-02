@@ -14,6 +14,7 @@ interface WalletContextType {
   address: string;
   isConnected: boolean;
   isConnecting: boolean;
+  isLoading: boolean;
   connectWallet: () => Promise<void>;
   disconnectWallet: () => void;
 }
@@ -23,10 +24,12 @@ const WalletContext = createContext<WalletContextType | undefined>(undefined);
 export const WalletProvider = ({ children }: { children: ReactNode }) => {
   const [address, setAddress] = useState('');
   const [isConnecting, setIsConnecting] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Check for existing connection on mount
   useEffect(() => {
     const checkConnection = async () => {
+      setIsLoading(true);
       const savedAddress = localStorage.getItem('walletAddress');
       if (savedAddress && window.ethereum) {
         try {
@@ -42,6 +45,7 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
           localStorage.removeItem('walletAddress');
         }
       }
+      setIsLoading(false);
     };
 
     checkConnection();
@@ -80,6 +84,7 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
         address,
         isConnected: !!address,
         isConnecting,
+        isLoading,
         connectWallet,
         disconnectWallet,
       }}
