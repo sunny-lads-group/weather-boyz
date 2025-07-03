@@ -346,6 +346,7 @@ mod tests {
             name: "Alice Johnson".to_string(),
             email: "alice@example.com".to_string(),
             password_hash: "$2b$12$hashed_password_string".to_string(),
+            wallet_address: None,
             created_at: None,
             updated_at: None,
         };
@@ -364,6 +365,7 @@ mod tests {
             "name": "Bob Wilson",
             "email": "bob@example.com",
             "password_hash": "$2b$12$another_hashed_password",
+            "wallet_address": "0x1234567890123456789012345678901234567890",
             "created_at": null,
             "updated_at": null
         }"#;
@@ -384,6 +386,7 @@ mod tests {
             name: "Clone Test".to_string(),
             email: "clone@test.com".to_string(),
             password_hash: "hashed_clone_password".to_string(),
+            wallet_address: None,
             created_at: None,
             updated_at: None,
         };
@@ -402,6 +405,7 @@ mod tests {
             name: "Negative ID User".to_string(),
             email: "negative@example.com".to_string(),
             password_hash: "some_hash".to_string(),
+            wallet_address: None,
             created_at: None,
             updated_at: None,
         };
@@ -418,6 +422,7 @@ mod tests {
             name: "Max ID User".to_string(),
             email: "max@example.com".to_string(),
             password_hash: "max_hash".to_string(),
+            wallet_address: None,
             created_at: None,
             updated_at: None,
         };
