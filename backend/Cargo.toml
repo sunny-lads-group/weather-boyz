@@ -26,6 +26,9 @@ time = { version = "0.3", features = ["serde"] }
 jsonwebtoken = "9.3.0"
 bcrypt = "0.15.1"
 chrono = { version = "0.4.34", features = ["serde"] }
+ethers = { version = "2.0", features = ["legacy"] }
+hex = "0.4"
+thiserror = "1.0"
 
 [dev-dependencies]
 axum-test = "17.3"
