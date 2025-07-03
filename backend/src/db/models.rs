@@ -26,6 +26,7 @@ pub struct User {
     pub name: String,
     pub email: String,
     pub password_hash: String,
+    pub wallet_address: Option<String>,
     pub created_at: Option<PrimitiveDateTime>,
     pub updated_at: Option<PrimitiveDateTime>,
 }
@@ -93,6 +94,10 @@ pub struct InsurancePolicy {
     pub weather_station_id: Option<String>,
     pub smart_contract_address: Option<String>,
     pub purchase_transaction_hash: Option<String>,
+    pub blockchain_verified: Option<bool>,
+    pub verification_timestamp: Option<PrimitiveDateTime>,
+    pub blockchain_block_number: Option<i64>,
+    pub verification_error_message: Option<String>,
     pub created_at: Option<PrimitiveDateTime>,
     pub updated_at: Option<PrimitiveDateTime>,
 }
