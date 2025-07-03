@@ -58,7 +58,7 @@ pub async fn create_user(
     // Attempt to create user
     let user = sqlx::query_as!(
         User,
-        "INSERT INTO users (name, email, password_hash) VALUES ($1, $2, $3) RETURNING id, name, email, password_hash, created_at, updated_at",
+        "INSERT INTO users (name, email, password_hash) VALUES ($1, $2, $3) RETURNING id, name, email, password_hash, wallet_address, created_at, updated_at",
         new_user.name.trim(),
         new_user.email.trim().to_lowercase(),
         password_hash
@@ -113,7 +113,7 @@ pub async fn retrieve_user_by_email(
 
     let user = sqlx::query_as!(
         User,
-        "SELECT id, name, email, password_hash, created_at, updated_at FROM users WHERE email = $1",
+        "SELECT id, name, email, password_hash, wallet_address, created_at, updated_at FROM users WHERE email = $1",
         email.trim().to_lowercase()
     )
     .fetch_optional(pool)

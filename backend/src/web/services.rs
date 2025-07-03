@@ -5,6 +5,7 @@ use sqlx::Postgres;
 
 use crate::db::models::{User, PolicyTemplate, CreateInsurancePolicy, CreateInsurancePolicyRequest, InsurancePolicy};
 use crate::db::policy_queries;
+use crate::blockchain::{BlockchainService, BlockchainConfig};
 use crate::web::{
     auth::{self},
     services,
@@ -45,7 +46,55 @@ pub async fn create_policy(
 ) -> impl IntoResponse {
     tracing::info!("Creating policy '{}' for user {}", request_data.policy_name, current_user.email);
     
-    // Convert request struct to database struct with user_id from JWT
+    // Validate that user has a wallet address
+    let user_wallet_address = match &current_user.wallet_address {
+        Some(addr) => addr,
+        None => {
+            tracing::warn!("User {} attempted to create policy without wallet address", current_user.email);
+            return (StatusCode::BAD_REQUEST, "User wallet address not found. Please connect your wallet first.").into_response();
+        }
+    };
+
+    // Validate that transaction hash is provided
+    let tx_hash = match &request_data.purchase_transaction_hash {
+        Some(hash) => hash,
+        None => {
+            tracing::warn!("Policy creation attempted without transaction hash for user {}", current_user.email);
+            return (StatusCode::BAD_REQUEST, "Purchase transaction hash is required").into_response();
+        }
+    };
+
+    // Perform blockchain verification
+    let blockchain_config = get_blockchain_config();
+    let blockchain_service = match BlockchainService::new(blockchain_config) {
+        Ok(service) => service,
+        Err(e) => {
+            tracing::error!("Failed to initialize blockchain service: {}", e);
+            return (StatusCode::INTERNAL_SERVER_ERROR, "Blockchain verification service unavailable").into_response();
+        }
+    };
+
+    let verification_result = match blockchain_service.verify_policy_transaction(
+        tx_hash,
+        user_wallet_address,
+        &request_data
+    ).await {
+        Ok(result) => result,
+        Err(e) => {
+            tracing::error!("Blockchain verification failed for user {}: {}", current_user.email, e);
+            return (StatusCode::BAD_REQUEST, format!("Blockchain verification failed: {}", e)).into_response();
+        }
+    };
+
+    if !verification_result.verified {
+        let error_msg = verification_result.error_message.unwrap_or("Verification failed".to_string());
+        tracing::warn!("Blockchain verification failed for user {}: {}", current_user.email, error_msg);
+        return (StatusCode::BAD_REQUEST, format!("Blockchain verification failed: {}", error_msg)).into_response();
+    }
+
+    tracing::info!("Blockchain verification successful for user {}", current_user.email);
+
+    // Convert request struct to database struct with user_id from JWT and verification data
     let policy_data = CreateInsurancePolicy {
         user_id: current_user.id,
         policy_template_id: request_data.policy_template_id,
@@ -65,15 +114,28 @@ pub async fn create_policy(
         purchase_transaction_hash: request_data.purchase_transaction_hash,
     };
     
-    match policy_queries::create_insurance_policy(&pool, &policy_data).await {
+    match policy_queries::create_insurance_policy_with_verification(&pool, &policy_data, &verification_result).await {
         Ok(policy) => {
-            tracing::info!("Successfully created policy with id: {} for user {}", policy.id, current_user.email);
+            tracing::info!("Successfully created verified policy with id: {} for user {}", policy.id, current_user.email);
             (StatusCode::CREATED, Json(policy)).into_response()
         }
         Err(e) => {
             tracing::error!("Failed to create policy for user {}: {}", current_user.email, e);
             (StatusCode::INTERNAL_SERVER_ERROR, "Failed to create policy").into_response()
         }
+    }
+}
+
+// Helper function to get blockchain configuration from environment
+fn get_blockchain_config() -> BlockchainConfig {
+    BlockchainConfig {
+        rpc_url: std::env::var("ETHEREUM_RPC_URL").unwrap_or_else(|_| "http://localhost:8545".to_string()),
+        contract_address: std::env::var("WEATHER_INSURANCE_CONTRACT_ADDRESS").unwrap_or_default(),
+        verification_enabled: std::env::var("BLOCKCHAIN_VERIFICATION_ENABLED").unwrap_or_else(|_| "true".to_string()) == "true",
+        timeout_seconds: std::env::var("VERIFICATION_TIMEOUT_SECONDS")
+            .unwrap_or_else(|_| "30".to_string())
+            .parse()
+            .unwrap_or(30),
     }
 }
 
