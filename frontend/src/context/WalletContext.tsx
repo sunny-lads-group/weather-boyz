@@ -2,6 +2,7 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { BrowserProvider } from 'ethers';
+import { updateWalletAddress } from '../services/authService';
 
 // Add type declaration for window.ethereum
 declare global {
@@ -51,6 +52,18 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
     checkConnection();
   }, []);
 
+  // Listen for wallet disconnect events (e.g., when user logs out)
+  useEffect(() => {
+    const handleWalletDisconnect = () => {
+      setAddress('');
+    };
+
+    // Listen for custom wallet disconnect event
+    window.addEventListener('walletDisconnect', handleWalletDisconnect);
+    
+    return () => window.removeEventListener('walletDisconnect', handleWalletDisconnect);
+  }, []);
+
   const connectWallet = async () => {
     try {
       setIsConnecting(true);
@@ -65,6 +78,18 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
       const walletAddress = await signer.getAddress();
       setAddress(walletAddress);
       localStorage.setItem('walletAddress', walletAddress);
+
+      // Update wallet address in backend (only if user is authenticated)
+      const token = localStorage.getItem('authToken');
+      if (token) {
+        try {
+          await updateWalletAddress(walletAddress);
+          console.log('✅ Wallet address synced with backend');
+        } catch (error) {
+          console.warn('⚠️ Failed to sync wallet address with backend:', error);
+          // Don't throw error here as wallet connection was successful
+        }
+      }
     } catch (error) {
       console.error('Error connecting wallet:', error);
       throw error;

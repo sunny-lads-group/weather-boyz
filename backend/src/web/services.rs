@@ -1,10 +1,11 @@
+// This file contains all exposed services for the backend
 use axum::{Extension, Json, response::IntoResponse, http::StatusCode};
 use serde::{Deserialize, Serialize};
 use sqlx::Pool;
 use sqlx::Postgres;
 
 use crate::db::models::{User, PolicyTemplate, CreateInsurancePolicy, CreateInsurancePolicyRequest, InsurancePolicy};
-use crate::db::policy_queries;
+use crate::db::{policy_queries, user_queries};
 use crate::blockchain::{BlockchainService, BlockchainConfig};
 use crate::web::{
     auth::{self},
@@ -155,4 +156,43 @@ pub async fn get_user_policies(
             (StatusCode::INTERNAL_SERVER_ERROR, "Failed to fetch policies").into_response()
         }
     }
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct UpdateWalletAddressRequest {
+    wallet_address: String,
+}
+
+pub async fn update_wallet_address(
+    Extension(pool): Extension<Pool<Postgres>>,
+    Extension(current_user): Extension<User>,
+    Json(request): Json<UpdateWalletAddressRequest>,
+) -> impl IntoResponse {
+    tracing::info!("Updating wallet address for user {}", current_user.email);
+
+    // Validate wallet address format (basic Ethereum address validation)
+    if !is_valid_ethereum_address(&request.wallet_address) {
+        tracing::warn!("Invalid wallet address format provided by user {}", current_user.email);
+        return (StatusCode::BAD_REQUEST, "Invalid wallet address format").into_response();
+    }
+
+    match user_queries::update_user_wallet_address(&pool, current_user.id, &request.wallet_address).await {
+        Ok(updated_user) => {
+            tracing::info!("Successfully updated wallet address for user {}", current_user.email);
+            Json(UserResponse {
+                email: updated_user.email,
+                name: updated_user.name,
+            }).into_response()
+        }
+        Err(e) => {
+            tracing::error!("Failed to update wallet address for user {}: {}", current_user.email, e);
+            (StatusCode::INTERNAL_SERVER_ERROR, "Failed to update wallet address").into_response()
+        }
+    }
+}
+
+// Helper function to validate Ethereum address format
+fn is_valid_ethereum_address(address: &str) -> bool {
+    // Basic validation: starts with 0x and is 42 characters long
+    address.starts_with("0x") && address.len() == 42 && address.chars().skip(2).all(|c| c.is_ascii_hexdigit())
 }
