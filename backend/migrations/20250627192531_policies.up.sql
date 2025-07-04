@@ -140,16 +140,16 @@ CREATE INDEX idx_policy_templates_active ON policy_templates(is_active);
 INSERT INTO policy_templates (template_name, description, policy_type, default_conditions, min_coverage_amount, max_coverage_amount, base_premium_rate) VALUES
 ('Drought Protection', 'Protection against extended periods without rainfall', 'drought', 
  '{"conditions": [{"type": "rainfall", "operator": "<", "threshold": 5, "unit": "mm", "period": "daily", "consecutive_days": 10}]}',
- 100.00, 10000.00, 0.05),
+ 1.00, 100.00, 0.05),
 
 ('Rain Event Insurance', 'Coverage for events that may be cancelled due to rain', 'rain',
  '{"conditions": [{"type": "rainfall", "operator": ">", "threshold": 10, "unit": "mm", "period": "daily", "consecutive_days": 1}]}',
- 50.00, 5000.00, 0.03),
+ 0.50, 5.00, 0.03),
 
 ('Freeze Protection', 'Protection against crop damage from freezing temperatures', 'temperature',
  '{"conditions": [{"type": "temperature_min", "operator": "<", "threshold": -2, "unit": "celsius", "period": "daily", "consecutive_days": 1}]}',
- 200.00, 20000.00, 0.08),
+ 2.00, 200.00, 0.08),
 
 ('Storm Insurance', 'Coverage for damage from high winds and storms', 'wind',
  '{"conditions": [{"type": "wind_speed", "operator": ">", "threshold": 60, "unit": "km/h", "period": "daily", "consecutive_days": 1}]}',
- 500.00, 50000.00, 0.10);
+ 5.00, 500.00, 0.10);
