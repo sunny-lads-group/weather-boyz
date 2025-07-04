@@ -196,3 +196,55 @@ fn is_valid_ethereum_address(address: &str) -> bool {
     // Basic validation: starts with 0x and is 42 characters long
     address.starts_with("0x") && address.len() == 42 && address.chars().skip(2).all(|c| c.is_ascii_hexdigit())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_valid_ethereum_addresses() {
+        // Test basic valid address format
+        assert!(is_valid_ethereum_address("0x1234567890123456789012345678901234567890"));
+        
+        // Test mixed case works
+        assert!(is_valid_ethereum_address("0x1234567890abcdef123456789012345678901234"));
+        assert!(is_valid_ethereum_address("0x1234567890ABCDEF123456789012345678901234"));
+        
+        // Test edge cases
+        assert!(is_valid_ethereum_address("0x0000000000000000000000000000000000000000"));
+        assert!(is_valid_ethereum_address("0xffffffffffffffffffffffffffffffffffffffff"));
+        assert!(is_valid_ethereum_address("0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"));
+    }
+
+    #[test]
+    fn test_invalid_ethereum_addresses() {
+        // Missing 0x prefix
+        assert!(!is_valid_ethereum_address("1234567890123456789012345678901234567890"));
+        
+        // Too short
+        assert!(!is_valid_ethereum_address("0x123"));
+        assert!(!is_valid_ethereum_address("0x123456789012345678901234567890123456789"));
+        
+        // Too long
+        assert!(!is_valid_ethereum_address("0x12345678901234567890123456789012345678901"));
+        
+        // Invalid characters
+        assert!(!is_valid_ethereum_address("0x123456789012345678901234567890123456789G"));
+        assert!(!is_valid_ethereum_address("0x123456789012345678901234567890123456789g"));
+        assert!(!is_valid_ethereum_address("0x12345678901234567890123456789012345678-0"));
+        
+        // Empty string
+        assert!(!is_valid_ethereum_address(""));
+        
+        // Just 0x
+        assert!(!is_valid_ethereum_address("0x"));
+        
+        // Wrong prefix
+        assert!(!is_valid_ethereum_address("1x1234567890123456789012345678901234567890"));
+        assert!(!is_valid_ethereum_address("0X1234567890123456789012345678901234567890"));
+        
+        // Contains spaces
+        assert!(!is_valid_ethereum_address("0x1234567890123456789012345678901234567890 "));
+        assert!(!is_valid_ethereum_address(" 0x1234567890123456789012345678901234567890"));
+    }
+}
