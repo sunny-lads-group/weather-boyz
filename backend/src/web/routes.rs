@@ -35,5 +35,13 @@ pub async fn app() -> Router {
             "/policy-templates",
             get(services::get_policy_templates).layer(middleware::from_fn(auth::authorization_middleware)),
         )
+        .route(
+            "/policies",
+            post(services::create_policy).layer(middleware::from_fn(auth::authorization_middleware)),
+        )
+        .route(
+            "/policies",
+            get(services::get_user_policies).layer(middleware::from_fn(auth::authorization_middleware)),
+        )
         .layer(middleware::from_fn(logging_middleware))
 }

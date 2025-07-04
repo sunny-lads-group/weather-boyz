@@ -9,11 +9,11 @@ import { useWallet } from '../../context/WalletContext';
 import { useAuth } from '../../context/AuthContext';
 
 const Layout = () => {
-  const { isConnected } = useWallet();
-  const { isAuthenticated, loading } = useAuth();
+  const { isConnected, isLoading: walletLoading } = useWallet();
+  const { isAuthenticated, loading: authLoading } = useAuth();
 
-  // Show loading spinner while checking authentication
-  if (loading) {
+  // Show loading spinner while checking authentication or wallet
+  if (authLoading || walletLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-100">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-indigo-600"></div>

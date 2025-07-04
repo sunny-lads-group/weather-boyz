@@ -40,7 +40,7 @@ const NotificationContainer = () => {
       {notifications.map((notification) => (
         <div
           key={notification.id}
-          className={`max-w-sm w-full p-4 border rounded-lg shadow-lg ${getNotificationStyles(notification.type)} transition-all duration-300 ease-in-out`}
+          className={`max-w-lg w-full p-4 border rounded-lg shadow-lg ${getNotificationStyles(notification.type)} transition-all duration-300 ease-in-out`}
         >
           <div className="flex items-start">
             <div className="flex-shrink-0">
@@ -53,7 +53,7 @@ const NotificationContainer = () => {
                 {notification.title}
               </h3>
               {notification.message && (
-                <p className="mt-1 text-sm opacity-90">
+                <p className="mt-1 text-sm opacity-90 break-all overflow-wrap-anywhere">
                   {notification.message}
                 </p>
               )}

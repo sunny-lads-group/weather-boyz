@@ -47,3 +47,26 @@ export interface PolicyTemplate {
   created_at?: string;
   updated_at?: string;
 }
+
+export interface InsurancePolicy {
+  id: number;
+  user_id: number;
+  policy_template_id?: number;
+  policy_name: string;
+  policy_type: string;
+  location_latitude: string;
+  location_longitude: string;
+  location_h3_index?: string;
+  location_name?: string;
+  coverage_amount: string;
+  premium_amount: string;
+  currency?: string;
+  start_date: string | number[];
+  end_date: string | number[];
+  status?: string;
+  weather_station_id?: string;
+  smart_contract_address?: string;
+  purchase_transaction_hash?: string;
+  created_at?: string;
+  updated_at?: string;
+}
