@@ -13,7 +13,7 @@ const PolicyTemplateCard = ({
     const num = parseFloat(amount);
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'ETH',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(num);

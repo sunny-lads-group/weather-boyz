@@ -4,7 +4,11 @@ import LocationInput from '../components/weather/LocationInput';
 import type { LocationData } from '../components/weather/LocationInput';
 import PolicyTemplateCard from '../components/policy/PolicyTemplateCard';
 import type { PolicyTemplate } from '../types';
-import { fetchPolicyTemplates, createPolicy, type CreatePolicyRequest } from '../services/policyService';
+import {
+  fetchPolicyTemplates,
+  createPolicy,
+  type CreatePolicyRequest,
+} from '../services/policyService';
 import { useWallet } from '../context/WalletContext';
 import { useNotifications } from '../context/NotificationContext';
 import { BrowserProvider, parseEther } from 'ethers';
@@ -53,24 +57,32 @@ const AvailablePolicies = () => {
         type: 'warning',
         title: 'Wallet Required',
         message: 'Please connect your wallet first to purchase a policy.',
-        duration: 5000
+        duration: 5000,
       });
       return;
     }
-
     try {
       const provider = new BrowserProvider(window.ethereum);
       const contract = await getContract(provider);
 
-      // Example values - adjust these based on your template data
-      const duration = 30 * 24 * 60 * 60; // 30 days in seconds
-      const payout = parseEther(template.max_coverage_amount); // Convert to Wei
-      const threshold = -5; // Example threshold temperature
-      const eventType = 'TEMP_BELOW';
-      const h3HexId = '8928308280fffff'; // Example H3 hex ID
-
-      // Calculate premium (10% of payout as per contract requirement)
+      // Convert values to appropriate types
+      const duration = BigInt(30 * 24 * 60 * 60); // Convert to BigInt
+      const payout = parseEther(template.max_coverage_amount);
+      const threshold = BigInt(
+        template.default_conditions.conditions[0].threshold
+      );
+      const eventType = String(template.default_conditions.conditions[0].type);
+      const h3HexId = String(locationData?.h3Index);
       const premium = payout / BigInt(10);
+
+      console.log('Purchasing policy with the following details:', {
+        duration,
+        payout,
+        threshold,
+        eventType,
+        h3HexId,
+        premium,
+      });
 
       // Create transaction
       const tx = await contract.buyPolicy(
@@ -79,11 +91,17 @@ const AvailablePolicies = () => {
         threshold,
         eventType,
         h3HexId,
-        { value: premium }
+        {
+          value: premium,
+          gasLimit: 500000, // Add explicit gas limit
+        }
       );
+
+      console.log('Transaction sent:', tx.hash);
 
       // Wait for transaction to be mined
       await tx.wait();
+      console.log('Transaction confirmed:', tx.hash);
 
       // Create policy in database after successful blockchain transaction
       try {
@@ -109,21 +127,19 @@ const AvailablePolicies = () => {
         };
 
         const createdPolicy = await createPolicy(policyData);
-        
         addNotification({
           type: 'success',
           title: 'Policy Purchased Successfully!',
           message: `Your weather insurance policy has been purchased and saved. Policy ID: ${createdPolicy.id}`,
-          duration: 10000
+          duration: 10000,
         });
       } catch (policyError) {
         console.error('Error creating policy in database:', policyError);
-        
         addNotification({
           type: 'warning',
           title: 'Policy Purchase Completed',
           message: `Blockchain transaction successful (${tx.hash}) but failed to save policy details. Please contact support.`,
-          duration: 15000
+          duration: 15000,
         });
       }
 
@@ -135,7 +151,7 @@ const AvailablePolicies = () => {
         type: 'error',
         title: 'Purchase Failed',
         message: 'Failed to purchase policy. Please try again.',
-        duration: 5000
+        duration: 5000,
       });
     }
   };

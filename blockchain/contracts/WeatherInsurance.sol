@@ -23,7 +23,11 @@ contract WeatherInsurance {
     }
 
     function buyPolicy(uint duration, uint payout, int256 threshold, string memory eventType, string memory h3HexId) public payable {
+        require(duration > 0, "Duration must be greater than 0");
+        require(payout > 0, "Payout must be greater than 0");
         require(msg.value >= payout / 10, "Premium too low");
+        require(bytes(eventType).length > 0, "Event type cannot be empty");
+        require(bytes(h3HexId).length > 0, "H3 hex ID cannot be empty");
 
         policies[policyCount] = Policy(
             msg.sender,
@@ -35,7 +39,6 @@ contract WeatherInsurance {
             eventType,
             h3HexId
         );
-
         policyCount++;
     }
 
