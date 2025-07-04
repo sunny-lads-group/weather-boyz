@@ -13,7 +13,7 @@ export interface CreatePolicyRequest {
   end_date: string;
   weather_station_id?: string;
   smart_contract_address?: string;
-  purchase_transaction_hash?: string;
+  purchase_transaction_hash: string;
 }
 
 export const fetchPolicyTemplates = async () => {

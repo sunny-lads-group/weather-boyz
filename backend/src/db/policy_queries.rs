@@ -87,6 +87,7 @@ pub async fn get_policies_by_user_id(pool: &Pool<Postgres>, user_id: i32) -> Res
          location_latitude, location_longitude, location_h3_index, location_name,
          coverage_amount, premium_amount, currency, start_date, end_date, status,
          weather_station_id, smart_contract_address, purchase_transaction_hash,
+         blockchain_verified, verification_timestamp, blockchain_block_number, verification_error_message,
          created_at, updated_at
          FROM insurance_policies 
          WHERE user_id = $1
@@ -109,6 +110,7 @@ pub async fn get_policy_by_id(pool: &Pool<Postgres>, policy_id: i32) -> Result<O
          location_latitude, location_longitude, location_h3_index, location_name,
          coverage_amount, premium_amount, currency, start_date, end_date, status,
          weather_station_id, smart_contract_address, purchase_transaction_hash,
+         blockchain_verified, verification_timestamp, blockchain_block_number, verification_error_message,
          created_at, updated_at
          FROM insurance_policies 
          WHERE id = $1",
@@ -142,6 +144,7 @@ pub async fn create_insurance_policy(pool: &Pool<Postgres>, policy_data: &Create
          location_latitude, location_longitude, location_h3_index, location_name,
          coverage_amount, premium_amount, currency, start_date, end_date, status,
          weather_station_id, smart_contract_address, purchase_transaction_hash,
+         blockchain_verified, verification_timestamp, blockchain_block_number, verification_error_message,
          created_at, updated_at",
         policy_data.user_id,
         policy_data.policy_template_id,
@@ -164,6 +167,56 @@ pub async fn create_insurance_policy(pool: &Pool<Postgres>, policy_data: &Create
     .await?;
 
     info!("Created insurance policy with id: {}", policy.id);
+    Ok(policy)
+}
+
+pub async fn create_insurance_policy_with_verification(
+    pool: &Pool<Postgres>, 
+    policy_data: &CreateInsurancePolicy,
+    verification_result: &crate::blockchain::VerificationResult
+) -> Result<InsurancePolicy, sqlx::Error> {
+    info!("Creating new verified insurance policy: {} for user {}", policy_data.policy_name, policy_data.user_id);
+    
+    let currency = policy_data.currency.as_deref().unwrap_or("ETH");
+    
+    let policy = sqlx::query_as!(
+        InsurancePolicy,
+        "INSERT INTO insurance_policies 
+         (user_id, policy_template_id, policy_name, policy_type, location_latitude, location_longitude,
+          location_h3_index, location_name, coverage_amount, premium_amount, currency, start_date, end_date,
+          weather_station_id, smart_contract_address, purchase_transaction_hash,
+          blockchain_verified, verification_timestamp, blockchain_block_number, verification_error_message)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, CURRENT_TIMESTAMP, $18, $19)
+         RETURNING id, user_id, policy_template_id, policy_name, policy_type,
+         location_latitude, location_longitude, location_h3_index, location_name,
+         coverage_amount, premium_amount, currency, start_date, end_date, status,
+         weather_station_id, smart_contract_address, purchase_transaction_hash,
+         blockchain_verified, verification_timestamp, blockchain_block_number, verification_error_message,
+         created_at, updated_at",
+        policy_data.user_id,
+        policy_data.policy_template_id,
+        policy_data.policy_name,
+        policy_data.policy_type,
+        policy_data.location_latitude,
+        policy_data.location_longitude,
+        policy_data.location_h3_index,
+        policy_data.location_name,
+        policy_data.coverage_amount,
+        policy_data.premium_amount,
+        currency,
+        policy_data.start_date,
+        policy_data.end_date,
+        policy_data.weather_station_id,
+        policy_data.smart_contract_address,
+        policy_data.purchase_transaction_hash,
+        verification_result.verified,
+        verification_result.block_number.map(|n| n as i64),
+        verification_result.error_message.as_deref()
+    )
+    .fetch_one(pool)
+    .await?;
+
+    info!("Created verified insurance policy with id: {}", policy.id);
     Ok(policy)
 }
 

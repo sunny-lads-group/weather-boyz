@@ -58,7 +58,7 @@ pub async fn create_user(
     // Attempt to create user
     let user = sqlx::query_as!(
         User,
-        "INSERT INTO users (name, email, password_hash) VALUES ($1, $2, $3) RETURNING id, name, email, password_hash, created_at, updated_at",
+        "INSERT INTO users (name, email, password_hash) VALUES ($1, $2, $3) RETURNING id, name, email, password_hash, wallet_address, created_at, updated_at",
         new_user.name.trim(),
         new_user.email.trim().to_lowercase(),
         password_hash
@@ -113,7 +113,7 @@ pub async fn retrieve_user_by_email(
 
     let user = sqlx::query_as!(
         User,
-        "SELECT id, name, email, password_hash, created_at, updated_at FROM users WHERE email = $1",
+        "SELECT id, name, email, password_hash, wallet_address, created_at, updated_at FROM users WHERE email = $1",
         email.trim().to_lowercase()
     )
     .fetch_optional(pool)
@@ -128,6 +128,28 @@ pub async fn retrieve_user_by_email(
         }
     }
 
+    Ok(user)
+}
+
+pub async fn update_user_wallet_address(
+    pool: &Pool<Postgres>,
+    user_id: i32,
+    wallet_address: &str,
+) -> Result<User, SqlxError> {
+    tracing::info!("Updating wallet address for user id: {}", user_id);
+
+    let user = sqlx::query_as!(
+        User,
+        "UPDATE users SET wallet_address = $1, updated_at = CURRENT_TIMESTAMP 
+         WHERE id = $2 
+         RETURNING id, name, email, password_hash, wallet_address, created_at, updated_at",
+        wallet_address,
+        user_id
+    )
+    .fetch_one(pool)
+    .await?;
+
+    tracing::info!("Successfully updated wallet address for user id: {}", user_id);
     Ok(user)
 }
 

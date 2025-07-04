@@ -99,7 +99,7 @@ pub async fn create_test_user(
     // Insert user into PostgreSQL database using your existing query
     let user = sqlx::query_as!(
         User,
-        "INSERT INTO users (name, email, password_hash) VALUES ($1, $2, $3) RETURNING id, name, email, password_hash, created_at, updated_at",
+        "INSERT INTO users (name, email, password_hash) VALUES ($1, $2, $3) RETURNING id, name, email, password_hash, wallet_address, created_at, updated_at",
         create_user.name.trim(),
         create_user.email.trim().to_lowercase(),
         password_hash

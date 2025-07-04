@@ -4,7 +4,7 @@ use axum::{
     extract::Request,
     middleware,
     response::Response,
-    routing::{get, post},
+    routing::{get, post, put},
 };
 use std::future::Future;
 use std::pin::Pin;
@@ -42,6 +42,10 @@ pub async fn app() -> Router {
         .route(
             "/policies",
             get(services::get_user_policies).layer(middleware::from_fn(auth::authorization_middleware)),
+        )
+        .route(
+            "/user/wallet",
+            put(services::update_wallet_address).layer(middleware::from_fn(auth::authorization_middleware)),
         )
         .layer(middleware::from_fn(logging_middleware))
 }

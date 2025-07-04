@@ -5,6 +5,7 @@ mod db;
 use db::user_queries::create_user;
 
 mod web;
+mod blockchain;
 
 #[cfg(test)]
 mod test_utils;

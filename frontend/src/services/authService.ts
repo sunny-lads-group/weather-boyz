@@ -28,3 +28,38 @@ export const validateTokenWithServer = async (): Promise<boolean> => {
     return true;
   }
 };
+
+export const updateWalletAddress = async (walletAddress: string): Promise<void> => {
+  const token = localStorage.getItem('authToken');
+  if (!token) {
+    throw new Error('No authentication token found');
+  }
+
+  try {
+    console.log('📝 Updating wallet address:', walletAddress);
+    const response = await fetch('http://localhost:3000/user/wallet', {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ wallet_address: walletAddress })
+    });
+
+    console.log('📡 Wallet update response:', { 
+      status: response.status, 
+      statusText: response.statusText, 
+      ok: response.ok 
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Failed to update wallet address: ${response.status} ${response.statusText} - ${errorText}`);
+    }
+
+    console.log('✅ Wallet address updated successfully');
+  } catch (error) {
+    console.error('❌ Error updating wallet address:', error);
+    throw error;
+  }
+};

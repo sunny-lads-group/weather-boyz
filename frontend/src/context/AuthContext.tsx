@@ -192,6 +192,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       clearTimeout(activityTimeoutRef.current);
       activityTimeoutRef.current = null;
     }
+    
+    // Notify wallet context to clear its state
+    window.dispatchEvent(new CustomEvent('walletDisconnect'));
   };
 
   const value = {

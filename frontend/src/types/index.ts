@@ -67,6 +67,10 @@ export interface InsurancePolicy {
   weather_station_id?: string;
   smart_contract_address?: string;
   purchase_transaction_hash?: string;
+  blockchain_verified?: boolean;
+  verification_timestamp?: string;
+  blockchain_block_number?: number;
+  verification_error_message?: string;
   created_at?: string;
   updated_at?: string;
 }
