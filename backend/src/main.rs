@@ -4,8 +4,8 @@ use tower_http::cors::CorsLayer;
 mod db;
 use db::user_queries::create_user;
 
-mod web;
 mod blockchain;
+mod web;
 
 #[cfg(test)]
 mod test_utils;
@@ -13,7 +13,13 @@ mod test_utils;
 #[tokio::main]
 async fn main() {
     // Load environment variables from .env file
-    dotenvy::dotenv().ok();
+    dotenvy::from_path("../.env").ok();
+    let backend_url: String =
+        std::env::var("BACKEND_URL").unwrap_or_else(|_| "http://0.0.0.0:6969".to_string());
+    
+    let backend_address: String =
+        std::env::var("BACKEND_ADDRESS").unwrap_or_else(|_| "0.0.0.0:6969".to_string());
+
 
     tracing_subscriber::fmt::init();
     tracing::info!("Starting weather-boyz backend server...");
@@ -48,18 +54,18 @@ async fn main() {
         .layer(cors)
         .layer(axum::extract::Extension(pool));
 
-    let listener = match tokio::net::TcpListener::bind("0.0.0.0:3000").await {
+    let listener = match tokio::net::TcpListener::bind(&backend_address).await {
         Ok(listener) => {
-            tracing::info!("Server bound to 0.0.0.0:3000");
+            tracing::info!("Server bound to {}", backend_address);
             listener
         }
         Err(e) => {
-            tracing::error!("Failed to bind to 0.0.0.0:3000: {:?}", e);
+            tracing::error!("Failed to bind to {}: {:?}", backend_address, e);
             std::process::exit(1);
         }
     };
 
-    tracing::info!("Server running on http://0.0.0.0:3000");
+    tracing::info!("Server running on {}", backend_url);
     tracing::info!("Available endpoints:");
     tracing::info!("  POST /signin - User Authentication (get token)");
     tracing::info!("  POST /createUser - Create new user");

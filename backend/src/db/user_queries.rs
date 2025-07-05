@@ -149,7 +149,10 @@ pub async fn update_user_wallet_address(
     .fetch_one(pool)
     .await?;
 
-    tracing::info!("Successfully updated wallet address for user id: {}", user_id);
+    tracing::info!(
+        "Successfully updated wallet address for user id: {}",
+        user_id
+    );
     Ok(user)
 }
 
@@ -161,12 +164,12 @@ mod tests {
     fn test_hash_password_success() {
         let password = "test_password_123";
         let result = hash_password(password);
-        
+
         assert!(result.is_ok());
         let hash = result.unwrap();
         assert!(!hash.is_empty());
         assert_ne!(hash, password); // Hash should be different from original password
-        
+
         // Verify the hash starts with bcrypt identifier
         assert!(hash.starts_with("$2b$") || hash.starts_with("$2a$") || hash.starts_with("$2y$"));
     }
@@ -176,7 +179,7 @@ mod tests {
         let password = "same_password";
         let hash1 = hash_password(password).unwrap();
         let hash2 = hash_password(password).unwrap();
-        
+
         // Different hashes should be generated due to salt
         assert_ne!(hash1, hash2);
     }
@@ -185,7 +188,7 @@ mod tests {
     fn test_hash_password_empty_string() {
         let empty_password = "";
         let result = hash_password(empty_password);
-        
+
         // Should handle empty passwords
         assert!(result.is_ok());
         let hash = result.unwrap();
@@ -197,7 +200,7 @@ mod tests {
         // Test with a very long password
         let long_password = "a".repeat(1000);
         let result = hash_password(&long_password);
-        
+
         // Should handle long passwords
         assert!(result.is_ok());
         let hash = result.unwrap();
@@ -208,7 +211,7 @@ mod tests {
     fn test_hash_password_special_characters() {
         let special_password = "p@ssw0rd!#$%^&*()";
         let result = hash_password(special_password);
-        
+
         assert!(result.is_ok());
         let hash = result.unwrap();
         assert!(!hash.is_empty());
@@ -218,7 +221,7 @@ mod tests {
     fn test_hash_password_unicode_characters() {
         let unicode_password = "pàssw🔑rd";
         let result = hash_password(unicode_password);
-        
+
         assert!(result.is_ok());
         let hash = result.unwrap();
         assert!(!hash.is_empty());

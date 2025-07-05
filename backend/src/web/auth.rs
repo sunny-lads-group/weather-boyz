@@ -246,10 +246,10 @@ mod tests {
         let password = "test_password_123";
         let hash1 = hash(password, DEFAULT_COST).unwrap();
         let hash2 = hash(password, DEFAULT_COST).unwrap();
-        
+
         // Same password should create different hashes due to salt
         assert_ne!(hash1, hash2);
-        
+
         // Both hashes should verify correctly
         assert!(verify_password(password, &hash1).unwrap());
         assert!(verify_password(password, &hash2).unwrap());
@@ -302,7 +302,9 @@ mod tests {
     #[test]
     fn test_jwt_encode_decode_roundtrip() {
         // Set JWT secret for testing
-        unsafe { env::set_var("JWT_SECRET", "test_secret_key_for_jwt_testing"); }
+        unsafe {
+            env::set_var("JWT_SECRET", "test_secret_key_for_jwt_testing");
+        }
 
         let email = "test@example.com".to_string();
 
@@ -321,12 +323,16 @@ mod tests {
         assert_eq!(token_data.claims.email, email);
 
         // Clean up
-        unsafe { env::remove_var("JWT_SECRET"); }
+        unsafe {
+            env::remove_var("JWT_SECRET");
+        }
     }
 
     #[test]
     fn test_jwt_token_contains_correct_claims() {
-        unsafe { env::set_var("JWT_SECRET", "test_secret_key_for_claims_testing"); }
+        unsafe {
+            env::set_var("JWT_SECRET", "test_secret_key_for_claims_testing");
+        }
 
         let email = "claims@test.com".to_string();
         let before_encoding = Utc::now().timestamp() as usize;
@@ -341,17 +347,21 @@ mod tests {
         assert!(token_data.claims.iat >= before_encoding);
         assert!(token_data.claims.iat <= (Utc::now().timestamp() as usize + 5)); // 5 second buffer
 
-        unsafe { env::remove_var("JWT_SECRET"); }
+        unsafe {
+            env::remove_var("JWT_SECRET");
+        }
     }
 
     #[test]
     fn test_jwt_encode_without_secret() {
         // Ensure no JWT_SECRET is set
-        unsafe { env::remove_var("JWT_SECRET"); }
-        
+        unsafe {
+            env::remove_var("JWT_SECRET");
+        }
+
         let email = "test@example.com".to_string();
         let result = encode_jwt(email);
-        
+
         // Should fail without JWT_SECRET
         assert!(result.is_err());
         assert_eq!(result.unwrap_err(), StatusCode::INTERNAL_SERVER_ERROR);
@@ -359,25 +369,31 @@ mod tests {
 
     #[test]
     fn test_jwt_decode_with_invalid_token() {
-        unsafe { env::set_var("JWT_SECRET", "test_secret_for_invalid_token_test"); }
-        
+        unsafe {
+            env::set_var("JWT_SECRET", "test_secret_for_invalid_token_test");
+        }
+
         let invalid_token = "invalid.jwt.token".to_string();
         let result = decode_jwt(invalid_token);
-        
+
         assert!(result.is_err());
         assert_eq!(result.unwrap_err(), StatusCode::INTERNAL_SERVER_ERROR);
-        
-        unsafe { env::remove_var("JWT_SECRET"); }
+
+        unsafe {
+            env::remove_var("JWT_SECRET");
+        }
     }
 
     #[test]
     fn test_jwt_decode_without_secret() {
         // Ensure no JWT_SECRET is set
-        unsafe { env::remove_var("JWT_SECRET"); }
-        
+        unsafe {
+            env::remove_var("JWT_SECRET");
+        }
+
         let token = "some.jwt.token".to_string();
         let result = decode_jwt(token);
-        
+
         // Should fail without JWT_SECRET
         assert!(result.is_err());
         assert_eq!(result.unwrap_err(), StatusCode::INTERNAL_SERVER_ERROR);
@@ -385,19 +401,23 @@ mod tests {
 
     #[test]
     fn test_jwt_with_empty_email() {
-        unsafe { env::set_var("JWT_SECRET", "test_secret_for_empty_email"); }
-        
+        unsafe {
+            env::set_var("JWT_SECRET", "test_secret_for_empty_email");
+        }
+
         let empty_email = "".to_string();
         let token_result = encode_jwt(empty_email.clone());
-        
+
         // Should succeed with empty email (validation happens elsewhere)
         assert!(token_result.is_ok());
-        
+
         let token = token_result.unwrap();
         let decode_result = decode_jwt(token);
         assert!(decode_result.is_ok());
         assert_eq!(decode_result.unwrap().claims.email, empty_email);
-        
-        unsafe { env::remove_var("JWT_SECRET"); }
+
+        unsafe {
+            env::remove_var("JWT_SECRET");
+        }
     }
 }

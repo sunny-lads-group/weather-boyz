@@ -16,6 +16,8 @@ export interface CreatePolicyRequest {
   purchase_transaction_hash: string;
 }
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:6969';
+
 export const fetchPolicyTemplates = async () => {
   const token = localStorage.getItem('authToken');
   if (!token) {
@@ -23,16 +25,18 @@ export const fetchPolicyTemplates = async () => {
   }
 
   try {
-    const response = await fetch('http://localhost:3000/policy-templates', {
+    const response = await fetch(`${API_URL}/policy-templates`, {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      }
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
     });
 
     if (!response.ok) {
-      throw new Error(`Failed to fetch policy templates: ${response.status} ${response.statusText}`);
+      throw new Error(
+        `Failed to fetch policy templates: ${response.status} ${response.statusText}`
+      );
     }
 
     return await response.json();
@@ -49,18 +53,20 @@ export const createPolicy = async (policyData: CreatePolicyRequest) => {
   }
 
   try {
-    const response = await fetch('http://localhost:3000/policies', {
+    const response = await fetch(`${API_URL}/policies`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
       },
-      body: JSON.stringify(policyData)
+      body: JSON.stringify(policyData),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error(`Failed to create policy: ${response.status} ${response.statusText} - ${errorText}`);
+      throw new Error(
+        `Failed to create policy: ${response.status} ${response.statusText} - ${errorText}`
+      );
     }
 
     return await response.json();
@@ -77,16 +83,18 @@ export const fetchUserPolicies = async () => {
   }
 
   try {
-    const response = await fetch('http://localhost:3000/policies', {
+    const response = await fetch(`${API_URL}/policies`, {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      }
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
     });
 
     if (!response.ok) {
-      throw new Error(`Failed to fetch user policies: ${response.status} ${response.statusText}`);
+      throw new Error(
+        `Failed to fetch user policies: ${response.status} ${response.statusText}`
+      );
     }
 
     return await response.json();

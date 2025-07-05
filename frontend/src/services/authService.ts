@@ -1,3 +1,5 @@
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:6969';
+
 export const validateTokenWithServer = async (): Promise<boolean> => {
   const token = localStorage.getItem('authToken');
   if (!token) {
@@ -7,18 +9,18 @@ export const validateTokenWithServer = async (): Promise<boolean> => {
 
   try {
     console.log('📞 Making request to /tokenvalid endpoint...');
-    const response = await fetch('http://localhost:3000/tokenvalid/', {
+    const response = await fetch(`${API_URL}/tokenvalid/`, {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      }
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
     });
 
-    console.log('📡 Server response:', { 
-      status: response.status, 
-      statusText: response.statusText, 
-      ok: response.ok 
+    console.log('📡 Server response:', {
+      status: response.status,
+      statusText: response.statusText,
+      ok: response.ok,
     });
 
     return response.ok;
@@ -29,7 +31,9 @@ export const validateTokenWithServer = async (): Promise<boolean> => {
   }
 };
 
-export const updateWalletAddress = async (walletAddress: string): Promise<void> => {
+export const updateWalletAddress = async (
+  walletAddress: string
+): Promise<void> => {
   const token = localStorage.getItem('authToken');
   if (!token) {
     throw new Error('No authentication token found');
@@ -37,24 +41,26 @@ export const updateWalletAddress = async (walletAddress: string): Promise<void> 
 
   try {
     console.log('📝 Updating wallet address:', walletAddress);
-    const response = await fetch('http://localhost:3000/user/wallet', {
+    const response = await fetch(`${API_URL}/user/wallet`, {
       method: 'PUT',
       headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ wallet_address: walletAddress })
+      body: JSON.stringify({ wallet_address: walletAddress }),
     });
 
-    console.log('📡 Wallet update response:', { 
-      status: response.status, 
-      statusText: response.statusText, 
-      ok: response.ok 
+    console.log('📡 Wallet update response:', {
+      status: response.status,
+      statusText: response.statusText,
+      ok: response.ok,
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error(`Failed to update wallet address: ${response.status} ${response.statusText} - ${errorText}`);
+      throw new Error(
+        `Failed to update wallet address: ${response.status} ${response.statusText} - ${errorText}`
+      );
     }
 
     console.log('✅ Wallet address updated successfully');

@@ -1,9 +1,9 @@
-use crate::blockchain::contract_abi::{WeatherInsurance, BlockchainPolicy, BuyPolicyTransaction};
+use crate::blockchain::contract_abi::{BlockchainPolicy, BuyPolicyTransaction, WeatherInsurance};
 use crate::db::models::CreateInsurancePolicyRequest;
 use ethers::prelude::*;
 use rust_decimal::Decimal;
-use std::sync::Arc;
 use std::str::FromStr;
+use std::sync::Arc;
 
 // Error types for blockchain verification
 #[derive(Debug, thiserror::Error)]
@@ -61,9 +61,10 @@ pub struct BlockchainService {
 
 impl BlockchainService {
     pub fn new(config: BlockchainConfig) -> Result<Self, BlockchainError> {
-        let provider = Provider::<Http>::try_from(&config.rpc_url)
-            .map_err(|e| BlockchainError::NetworkError(format!("Failed to connect to RPC: {}", e)))?;
-        
+        let provider = Provider::<Http>::try_from(&config.rpc_url).map_err(|e| {
+            BlockchainError::NetworkError(format!("Failed to connect to RPC: {}", e))
+        })?;
+
         let contract_address = Address::from_str(&config.contract_address)
             .map_err(|e| BlockchainError::ParseError(format!("Invalid contract address: {}", e)))?;
 
@@ -92,14 +93,14 @@ impl BlockchainService {
 
         // Step 1: Verify transaction exists and is confirmed
         let (tx_receipt, block_number) = self.verify_transaction_confirmed(tx_hash).await?;
-        
+
         // Step 2: Get transaction details
         let transaction = self.get_transaction_details(tx_hash).await?;
-        
+
         // Step 3: Validate user address matches transaction sender
         let user_addr = Address::from_str(user_wallet_address)
             .map_err(|e| BlockchainError::ParseError(format!("Invalid user address: {}", e)))?;
-        
+
         if transaction.from != user_addr {
             return Ok(VerificationResult {
                 verified: false,
@@ -114,7 +115,9 @@ impl BlockchainService {
             return Ok(VerificationResult {
                 verified: false,
                 block_number: Some(block_number),
-                error_message: Some("Transaction not sent to WeatherInsurance contract".to_string()),
+                error_message: Some(
+                    "Transaction not sent to WeatherInsurance contract".to_string(),
+                ),
                 blockchain_policy: None,
             });
         }
@@ -140,22 +143,33 @@ impl BlockchainService {
     }
 
     // Verify transaction exists and is confirmed
-    async fn verify_transaction_confirmed(&self, tx_hash: &str) -> Result<(TransactionReceipt, u64), BlockchainError> {
+    async fn verify_transaction_confirmed(
+        &self,
+        tx_hash: &str,
+    ) -> Result<(TransactionReceipt, u64), BlockchainError> {
         let tx_hash = H256::from_str(tx_hash)
             .map_err(|e| BlockchainError::ParseError(format!("Invalid transaction hash: {}", e)))?;
 
-        let receipt = self.provider
+        let receipt = self
+            .provider
             .get_transaction_receipt(tx_hash)
             .await
-            .map_err(|e| BlockchainError::NetworkError(format!("Failed to get transaction receipt: {}", e)))?
-            .ok_or_else(|| BlockchainError::TransactionNotFound(format!("Transaction {} not found", tx_hash)))?;
+            .map_err(|e| {
+                BlockchainError::NetworkError(format!("Failed to get transaction receipt: {}", e))
+            })?
+            .ok_or_else(|| {
+                BlockchainError::TransactionNotFound(format!("Transaction {} not found", tx_hash))
+            })?;
 
         // Check if transaction was successful
         if receipt.status != Some(U64::from(1)) {
-            return Err(BlockchainError::InvalidTransaction("Transaction failed".to_string()));
+            return Err(BlockchainError::InvalidTransaction(
+                "Transaction failed".to_string(),
+            ));
         }
 
-        let block_number = receipt.block_number
+        let block_number = receipt
+            .block_number
             .ok_or_else(|| BlockchainError::TransactionNotConfirmed)?
             .as_u64();
 
@@ -166,12 +180,17 @@ impl BlockchainService {
     async fn get_transaction_details(&self, tx_hash: &str) -> Result<Transaction, BlockchainError> {
         let tx_hash = H256::from_str(tx_hash)
             .map_err(|e| BlockchainError::ParseError(format!("Invalid transaction hash: {}", e)))?;
-        
-        let transaction = self.provider
+
+        let transaction = self
+            .provider
             .get_transaction(tx_hash)
             .await
-            .map_err(|e| BlockchainError::NetworkError(format!("Failed to get transaction: {}", e)))?
-            .ok_or_else(|| BlockchainError::TransactionNotFound(format!("Transaction {} not found", tx_hash)))?;
+            .map_err(|e| {
+                BlockchainError::NetworkError(format!("Failed to get transaction: {}", e))
+            })?
+            .ok_or_else(|| {
+                BlockchainError::TransactionNotFound(format!("Transaction {} not found", tx_hash))
+            })?;
 
         Ok(transaction)
     }
@@ -187,7 +206,10 @@ impl BlockchainService {
     pub async fn health_check(&self) -> Result<bool, BlockchainError> {
         match self.provider.get_block_number().await {
             Ok(_) => Ok(true),
-            Err(e) => Err(BlockchainError::NetworkError(format!("Health check failed: {}", e))),
+            Err(e) => Err(BlockchainError::NetworkError(format!(
+                "Health check failed: {}",
+                e
+            ))),
         }
     }
 }
