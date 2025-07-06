@@ -3,11 +3,13 @@ import type { PolicyTemplate } from '../../types';
 interface PolicyTemplateCardProps {
   template: PolicyTemplate;
   handlePolicyPurchase: (template: PolicyTemplate) => void;
+  disabled?: boolean;
 }
 
 const PolicyTemplateCard = ({
   template,
   handlePolicyPurchase,
+  disabled = false,
 }: PolicyTemplateCardProps) => {
   const formatCurrency = (amount: string) => {
     const num = parseFloat(amount);
@@ -109,12 +111,19 @@ const PolicyTemplateCard = ({
 
       <div className="mt-6 pt-4 border-t border-gray-100">
         <button
-          className="w-full bg-orange-500 text-white py-2 px-4 rounded-md text-sm font-medium hover:bg-orange-600 transition-colors duration-200"
+          className={`w-full py-2 px-4 rounded-md text-sm font-medium transition-colors duration-200 ${
+            disabled
+              ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
+              : 'bg-orange-500 text-white hover:bg-orange-600'
+          }`}
           onClick={() => {
-            handlePolicyPurchase(template);
+            if (!disabled) {
+              handlePolicyPurchase(template);
+            }
           }}
+          disabled={disabled}
         >
-          Purchase Policy
+          {disabled ? 'Processing...' : 'Purchase Policy'}
         </button>
       </div>
     </div>

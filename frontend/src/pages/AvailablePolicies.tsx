@@ -18,6 +18,7 @@ const AvailablePolicies = () => {
   const [currentStep, setCurrentStep] = useState(1); // Start on step 1 for location selection
   const [policyTemplates, setPolicyTemplates] = useState<PolicyTemplate[]>([]);
   const [loading, setLoading] = useState(false);
+  const [purchaseLoading, setPurchaseLoading] = useState(false);
   const [locationData, setLocationData] = useState<LocationData | null>(null);
   const wallet = useWallet();
   const navigate = useNavigate();
@@ -52,6 +53,10 @@ const AvailablePolicies = () => {
   };
 
   const handlePolicyPurchase = async (template: PolicyTemplate) => {
+    if (purchaseLoading) {
+      return; // Prevent multiple clicks
+    }
+    
     if (!window.ethereum || !wallet) {
       addNotification({
         type: 'warning',
@@ -62,6 +67,7 @@ const AvailablePolicies = () => {
       return;
     }
     
+    setPurchaseLoading(true);
     try {
       // Pre-transaction wallet verification: ensure current MetaMask account matches backend
       console.log('Verifying wallet address before transaction...');
@@ -182,6 +188,8 @@ const AvailablePolicies = () => {
         message: errorMessage,
         duration: 8000,
       });
+    } finally {
+      setPurchaseLoading(false);
     }
   };
 
@@ -243,6 +251,7 @@ const AvailablePolicies = () => {
                     key={template.id}
                     template={template}
                     handlePolicyPurchase={handlePolicyPurchase}
+                    disabled={purchaseLoading}
                   />
                 ))}
               </div>

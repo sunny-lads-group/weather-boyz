@@ -6,6 +6,25 @@
 
 A web3 application that allows users to buy weather insurance using weatherXM data to verify weather conditions and execute smart contracts.
 
+## WeatherXM Usage
+
+The project makes use of the following endpoints:
+
+1. GET a list of cells that contain devices: `https://api.weatherxm.com/api/v1/cells`
+2. GET devices of a specific cell: `https://api.weatherxm.com/api/v1/cells/index/devices`
+
+The user passes in their location allowing us to ascertain their current cell and the closest device. Once they have done that, we are able to identify their location's current weather and provide insurance options for them.
+
+We had originally had planned to keep a cache of weather data to allow more interesting contracts, but we opted not to pursue this due to time constraints.
+
+## The Team
+
+[Ferdinand737](https://github.com/Ferdinand737)
+
+[CeroZool](https://github.com/CeroZool)
+
+[HouseMech](https://github.com/HouseMech)
+
 ## Linux Setup
 
 **Requirements**
@@ -34,6 +53,14 @@ A web3 application that allows users to buy weather insurance using weatherXM da
 - [Tailwind CSS IntelliSense](https://marketplace.visualstudio.com/items?itemName=bradlc.vscode-tailwindcss)
 - [YAML](https://marketplace.visualstudio.com/items?itemName=redhat.vscode-yaml)
 
+### Environment Variables
+
+Copy the `.env.example` file in the root of the repo
+
+```bash
+cp .env.example .env
+```
+
 ### Backend Setup
 
 **Set up database**
@@ -52,6 +79,7 @@ cp .env.example .env
 ```
 
 Install sqlx-cli
+
 ```bash
 cargo install sqlx-cli
 ```
@@ -76,11 +104,11 @@ cargo run
 
 ### Frontend Setup
 
-Copy `.env` file in `weather-boyz/frontend/` directory from the example file
+Create symlink for `.env` file in `weather-boyz/frontend/` directory
 
 ```bash
 cd frontend
-cp .env.example .env
+ln -s ../.env .env
 ```
 
 Install dependencies
@@ -123,9 +151,16 @@ When node is running, it will output a list of accounts with their private keys.
 - Chain ID: `31337`
 - Currency Symbol: `ETH`
 
-## Backend Testing
-Run the tests for the backend using: 
+Deploy the smart contract
 
-```cargo test -- --test-threads=1```
+```bash
+node scripts/deploy.js
+```
+
+## Backend Testing
+
+Run the tests for the backend using:
+
+`cargo test -- --test-threads=1`
 
 We use a single thread as concurrency issues occur when running all of the tests asynchronously.
