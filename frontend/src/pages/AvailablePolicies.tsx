@@ -69,6 +69,10 @@ const AvailablePolicies = () => {
     
     setPurchaseLoading(true);
     try {
+      // Pre-transaction wallet verification: ensure current MetaMask account matches backend
+      console.log('Verifying wallet address before transaction...');
+      const currentWalletAddress = await wallet.syncWalletAddress();
+      console.log('✅ Wallet address verified:', currentWalletAddress);
       const provider = new BrowserProvider(window.ethereum);
       const contract = await getContract(provider);
 
@@ -154,11 +158,35 @@ const AvailablePolicies = () => {
       navigate('/');
     } catch (error) {
       console.error('Error purchasing policy:', error);
+      
+      // Enhanced error handling with specific wallet-related messages
+      let errorTitle = 'Purchase Failed';
+      let errorMessage = 'Failed to purchase policy. Please try again.';
+      
+      if (error instanceof Error) {
+        if (error.message.includes('MetaMask is not installed')) {
+          errorTitle = 'MetaMask Required';
+          errorMessage = 'Please install MetaMask to purchase policies.';
+        } else if (error.message.includes('User rejected') || error.message.includes('denied')) {
+          errorTitle = 'Transaction Rejected';
+          errorMessage = 'Transaction was rejected. Please try again.';
+        } else if (error.message.includes('insufficient funds')) {
+          errorTitle = 'Insufficient Funds';
+          errorMessage = 'You don\'t have enough ETH to complete this transaction.';
+        } else if (error.message.includes('Failed to update wallet address')) {
+          errorTitle = 'Wallet Sync Failed';
+          errorMessage = 'Failed to sync wallet address with our servers. Please check your connection and try again.';
+        } else if (error.message.includes('Wallet address changed')) {
+          errorTitle = 'Wallet Address Changed';
+          errorMessage = 'Your wallet address has changed. The transaction was cancelled for security. Please try again.';
+        }
+      }
+      
       addNotification({
         type: 'error',
-        title: 'Purchase Failed',
-        message: 'Failed to purchase policy. Please try again.',
-        duration: 5000,
+        title: errorTitle,
+        message: errorMessage,
+        duration: 8000,
       });
     } finally {
       setPurchaseLoading(false);

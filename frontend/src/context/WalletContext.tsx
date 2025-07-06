@@ -18,6 +18,7 @@ interface WalletContextType {
   isLoading: boolean;
   connectWallet: () => Promise<void>;
   disconnectWallet: () => void;
+  syncWalletAddress: () => Promise<string>;
 }
 
 const WalletContext = createContext<WalletContextType | undefined>(undefined);
@@ -64,6 +65,49 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
     return () => window.removeEventListener('walletDisconnect', handleWalletDisconnect);
   }, []);
 
+  // Listen for MetaMask account changes
+  useEffect(() => {
+    if (!window.ethereum) return;
+
+    const handleAccountsChanged = async (accounts: string[]) => {
+      console.log('MetaMask accounts changed:', accounts);
+      
+      if (accounts.length === 0) {
+        // User disconnected all accounts
+        console.log('No accounts connected');
+        setAddress('');
+        localStorage.removeItem('walletAddress');
+      } else {
+        // User switched to a different account
+        const newAddress = accounts[0];
+        console.log('Switched to account:', newAddress);
+        setAddress(newAddress);
+        localStorage.setItem('walletAddress', newAddress);
+        
+        // Sync new wallet address with backend (only if user is authenticated)
+        const token = localStorage.getItem('authToken');
+        if (token) {
+          try {
+            await updateWalletAddress(newAddress);
+            console.log('✅ New wallet address synced with backend:', newAddress);
+          } catch (error) {
+            console.warn('⚠️ Failed to sync new wallet address with backend:', error);
+          }
+        }
+      }
+    };
+
+    // Add event listener for account changes
+    window.ethereum.on('accountsChanged', handleAccountsChanged);
+    
+    // Cleanup
+    return () => {
+      if (window.ethereum) {
+        window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
+      }
+    };
+  }, []);
+
   const connectWallet = async () => {
     try {
       setIsConnecting(true);
@@ -103,6 +147,37 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
     localStorage.removeItem('walletAddress');
   };
 
+  const syncWalletAddress = async (): Promise<string> => {
+    if (!window.ethereum) {
+      throw new Error('MetaMask is not installed');
+    }
+
+    try {
+      const provider = new BrowserProvider(window.ethereum);
+      const signer = await provider.getSigner();
+      const currentAddress = await signer.getAddress();
+      
+      // Update local state if address changed
+      if (currentAddress !== address) {
+        console.log('Wallet address changed from', address, 'to', currentAddress);
+        setAddress(currentAddress);
+        localStorage.setItem('walletAddress', currentAddress);
+        
+        // Sync with backend (only if user is authenticated)
+        const token = localStorage.getItem('authToken');
+        if (token) {
+          await updateWalletAddress(currentAddress);
+          console.log('✅ Wallet address synced with backend:', currentAddress);
+        }
+      }
+      
+      return currentAddress;
+    } catch (error) {
+      console.error('Error syncing wallet address:', error);
+      throw error;
+    }
+  };
+
   return (
     <WalletContext.Provider
       value={{
@@ -112,6 +187,7 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
         isLoading,
         connectWallet,
         disconnectWallet,
+        syncWalletAddress,
       }}
     >
       {children}
