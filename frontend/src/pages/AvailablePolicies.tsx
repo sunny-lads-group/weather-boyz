@@ -61,7 +61,12 @@ const AvailablePolicies = () => {
       });
       return;
     }
+    
     try {
+      // Pre-transaction wallet verification: ensure current MetaMask account matches backend
+      console.log('Verifying wallet address before transaction...');
+      const currentWalletAddress = await wallet.syncWalletAddress();
+      console.log('✅ Wallet address verified:', currentWalletAddress);
       const provider = new BrowserProvider(window.ethereum);
       const contract = await getContract(provider);
 
