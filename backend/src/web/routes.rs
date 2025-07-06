@@ -33,19 +33,23 @@ pub async fn app() -> Router {
         )
         .route(
             "/policy-templates",
-            get(services::get_policy_templates).layer(middleware::from_fn(auth::authorization_middleware)),
+            get(services::get_policy_templates)
+                .layer(middleware::from_fn(auth::authorization_middleware)),
         )
         .route(
             "/policies",
-            post(services::create_policy).layer(middleware::from_fn(auth::authorization_middleware)),
+            post(services::create_policy)
+                .layer(middleware::from_fn(auth::authorization_middleware)),
         )
         .route(
             "/policies",
-            get(services::get_user_policies).layer(middleware::from_fn(auth::authorization_middleware)),
+            get(services::get_user_policies)
+                .layer(middleware::from_fn(auth::authorization_middleware)),
         )
         .route(
             "/user/wallet",
-            put(services::update_wallet_address).layer(middleware::from_fn(auth::authorization_middleware)),
+            put(services::update_wallet_address)
+                .layer(middleware::from_fn(auth::authorization_middleware)),
         )
         .layer(middleware::from_fn(logging_middleware))
 }

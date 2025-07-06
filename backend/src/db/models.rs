@@ -1,6 +1,6 @@
-use serde::{Deserialize, Serialize, Deserializer};
-use sqlx::types::time::PrimitiveDateTime;
 use rust_decimal::Decimal;
+use serde::{Deserialize, Deserializer, Serialize};
+use sqlx::types::time::PrimitiveDateTime;
 use time::OffsetDateTime;
 
 fn deserialize_primitive_datetime<'de, D>(deserializer: D) -> Result<PrimitiveDateTime, D::Error>
@@ -8,8 +8,9 @@ where
     D: Deserializer<'de>,
 {
     let s = String::deserialize(deserializer)?;
-    let offset_dt = OffsetDateTime::parse(&s, &time::format_description::well_known::Iso8601::DEFAULT)
-        .map_err(serde::de::Error::custom)?;
+    let offset_dt =
+        OffsetDateTime::parse(&s, &time::format_description::well_known::Iso8601::DEFAULT)
+            .map_err(serde::de::Error::custom)?;
     Ok(PrimitiveDateTime::new(offset_dt.date(), offset_dt.time()))
 }
 
@@ -290,7 +291,7 @@ mod tests {
         // Should serialize/deserialize successfully even with empty fields
         let json = serde_json::to_string(&create_user).unwrap();
         let deserialized: CreateUser = serde_json::from_str(&json).unwrap();
-        
+
         assert_eq!(deserialized.name, "");
         assert_eq!(deserialized.email, "");
         assert_eq!(deserialized.password, "");
@@ -306,7 +307,7 @@ mod tests {
 
         let json = serde_json::to_string(&create_user).unwrap();
         let deserialized: CreateUser = serde_json::from_str(&json).unwrap();
-        
+
         assert_eq!(deserialized.name, "José María O'Connor");
         assert_eq!(deserialized.email, "josé@example.com");
         assert_eq!(deserialized.password, "p@ssw0rd!#$%");
@@ -322,7 +323,7 @@ mod tests {
 
         let json = serde_json::to_string(&create_user).unwrap();
         let deserialized: CreateUser = serde_json::from_str(&json).unwrap();
-        
+
         assert_eq!(deserialized.name, create_user.name);
         assert_eq!(deserialized.email, create_user.email);
         assert_eq!(deserialized.password, create_user.password);
@@ -487,7 +488,7 @@ mod tests {
         };
 
         let debug_output = format!("{:?}", signin_data);
-        
+
         // Debug should show the struct but we want to ensure it's not leaking sensitive data in logs
         assert!(debug_output.contains("SignInData"));
         assert!(debug_output.contains("debug@example.com"));
@@ -567,7 +568,7 @@ mod tests {
         };
 
         let debug_output = format!("{:?}", current_user);
-        
+
         assert!(debug_output.contains("CurrentUser"));
         assert!(debug_output.contains("debug_current@example.com"));
         assert!(debug_output.contains("Debug Current User"));
