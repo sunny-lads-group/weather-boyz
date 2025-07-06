@@ -6,6 +6,25 @@
 
 A web3 application that allows users to buy weather insurance using weatherXM data to verify weather conditions and execute smart contracts.
 
+## WeatherXM Usage
+
+The project makes use of the following endpoints:
+
+1. GET a list of cells that contain devices: `https://api.weatherxm.com/api/v1/cells`
+2. GET devices of a specific cell: `https://api.weatherxm.com/api/v1/cells/index/devices`
+
+The user passes in their location allowing us to ascertain their current cell and the closest device. Once they have done that, we are able to identify their location's current weather and provide insurance options for them.
+
+We had originally had planned to keep a cache of weather data to allow more interesting contracts, but we opted not to pursue this due to time constraints.
+
+## The Team
+
+[Ferdinand737](https://github.com/Ferdinand737)
+
+[CeroZool](https://github.com/CeroZool)
+
+[HouseMech](https://github.com/HouseMech)
+
 ## Linux Setup
 
 **Requirements**
